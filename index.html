@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>PassiNest</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Geist+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0A0A0D;--bg2:#111118;
+  --s1:rgba(255,255,255,.028);--s2:rgba(255,255,255,.055);--s3:rgba(255,255,255,.08);
+  --b1:rgba(255,255,255,.055);--b2:rgba(255,255,255,.11);--b3:rgba(255,255,255,.18);
+  --tx:#EDEDED;--tx2:#8C8C96;--tx3:#44444E;
+  --ac:#7C5CFC;--ac2:#9D85FF;--ac3:rgba(124,92,252,.15);
+  --green:#22C55E;--g2:rgba(34,197,94,.12);
+  --red:#EF4444;--r2:rgba(239,68,68,.12);
+  --amber:#F59E0B;--am2:rgba(245,158,11,.12);
+  --cyan:#0EA5E9;--cy2:rgba(14,165,233,.12);
+  --sidebar:230px;--r:8px;--r2:12px;
+  font-family:'DM Sans',sans-serif;
+}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px}
+body{background:var(--bg);color:var(--tx);font-size:14px;line-height:1.5;height:100dvh;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");background-size:256px}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 55% 45% at 5% 0%,rgba(124,92,252,.1) 0%,transparent 70%),radial-gradient(ellipse 35% 35% at 95% 100%,rgba(14,165,233,.07) 0%,transparent 60%)}
+#app{display:flex;height:100dvh;overflow:hidden;position:relative;z-index:1}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar);flex-shrink:0;background:rgba(10,10,13,.85);border-right:1px solid var(--b1);backdrop-filter:blur(24px);display:flex;flex-direction:column;height:100dvh;position:relative;z-index:10}
+.sidebar::after{content:'';position:absolute;top:20%;right:-1px;width:1px;height:60%;background:linear-gradient(to bottom,transparent,rgba(124,92,252,.35),transparent);pointer-events:none}
+.logo-area{padding:18px 16px;border-bottom:1px solid var(--b1);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,#5B3FD8,#7C5CFC);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 18px rgba(124,92,252,.45)}
+.logo-name{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;letter-spacing:-.4px;line-height:1}
+.logo-name em{font-style:normal;background:linear-gradient(90deg,#9D85FF,#7C5CFC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo-tag{font-size:10px;color:var(--tx3);margin-top:2px;font-family:'Geist Mono',monospace}
+.sb-sec{padding:14px 14px 4px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--tx3);font-family:'Geist Mono',monospace}
+.res-list{padding:0 8px 6px;flex-shrink:0}
+.ri{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r);cursor:pointer;transition:.13s;margin-bottom:1px;border:1px solid transparent}
+.ri:hover{background:var(--s2)}
+.ri.on{background:rgba(124,92,252,.1);border-color:rgba(124,92,252,.22)}
+.rpill{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ri.on .rpill{box-shadow:0 0 7px currentColor}
+.rtxt{font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx2)}
+.ri.on .rtxt{color:var(--ac2)}
+.nav-list{padding:8px;flex:1;overflow-y:auto}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:.13s;color:var(--tx3);font-size:13px;font-weight:500;margin-bottom:1px;border:1px solid transparent;position:relative}
+.ni:hover{background:var(--s2);color:var(--tx2)}
+.ni.on{background:rgba(124,92,252,.1);color:var(--ac2);border-color:rgba(124,92,252,.2)}
+.ni.on::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:2px;height:55%;border-radius:1px;background:linear-gradient(180deg,#7C5CFC,#5B3FD8)}
+.ni svg{flex-shrink:0;opacity:.6;transition:.13s}
+.ni:hover svg,.ni.on svg{opacity:1}
+.sb-foot{padding:12px 14px;margin-top:auto;border-top:1px solid var(--b1)}
+.sb-ver{font-size:10px;color:var(--tx3);font-family:'Geist Mono',monospace;display:flex;align-items:center;gap:6px}
+.sb-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0}
+
+/* ── Main ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{padding:12px 22px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,13,.7);border-bottom:1px solid var(--b1);backdrop-filter:blur(16px);flex-shrink:0}
+.tb-title{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.3px}
+.tb-crumb{font-size:11px;color:var(--tx3);margin-top:1px;font-family:'Geist Mono',monospace}
+.content{flex:1;overflow-y:auto;padding:22px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;transition:.14s;border:none;font-family:inherit;white-space:nowrap}
+.btn svg{flex-shrink:0}
+.bp{background:linear-gradient(135deg,#5B3FD8,#7C5CFC);color:#fff;box-shadow:0 0 22px rgba(124,92,252,.28),inset 0 1px 0 rgba(255,255,255,.18)}
+.bp:hover{box-shadow:0 0 32px rgba(124,92,252,.45),inset 0 1px 0 rgba(255,255,255,.18);transform:translateY(-1px)}
+.bg2{background:var(--s2);color:var(--tx2);border:1px solid var(--b2)}
+.bg2:hover{background:var(--s3);color:var(--tx);border-color:var(--b3)}
+.bd{background:var(--r2);color:var(--red);border:1px solid rgba(239,68,68,.22)}
+.bd:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:6px 12px;font-size:11px}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none!important}
+
+/* ── KPI ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:22px}
+.kpi{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;position:relative;overflow:hidden;transition:.2s}
+.kpi:hover{background:var(--s2);border-color:var(--b2)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;opacity:0;transition:.2s;background:var(--_glow,transparent)}
+.kpi:hover::after{opacity:1}
+.kpi.vg{--_glow:linear-gradient(90deg,transparent,#22C55E,transparent)}
+.kpi.vr{--_glow:linear-gradient(90deg,transparent,#EF4444,transparent)}
+.kpi.vv{--_glow:linear-gradient(90deg,transparent,#7C5CFC,transparent)}
+.kpi.va{--_glow:linear-gradient(90deg,transparent,#F59E0B,transparent)}
+.kpi.vc{--_glow:linear-gradient(90deg,transparent,#0EA5E9,transparent)}
+.kico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.kico.g{background:var(--g2)}.kico.g svg{stroke:var(--green)}
+.kico.r{background:var(--r2)}.kico.r svg{stroke:var(--red)}
+.kico.v{background:var(--ac3)}.kico.v svg{stroke:var(--ac2)}
+.kico.a{background:var(--am2)}.kico.a svg{stroke:var(--amber)}
+.kico.c{background:var(--cy2)}.kico.c svg{stroke:var(--cyan)}
+.klabel{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.09em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:6px}
+.kval{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1}
+.ksub{font-size:11px;color:var(--tx3);margin-top:4px}
+
+/* ── Calendar ── */
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.cal-title{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;flex:1;text-align:center;letter-spacing:-.3px}
+.cal-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.13s}
+.cal-btn:hover{background:var(--s2);color:var(--tx)}
+.cal-dlabels{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.cdl{text-align:center;font-size:10px;font-weight:600;color:var(--tx3);padding:4px;text-transform:uppercase;letter-spacing:.1em;font-family:'Geist Mono',monospace}
+.cal-grid{display:flex;flex-direction:column;gap:2px}
+.cal-week{position:relative;display:grid;grid-template-columns:repeat(7,1fr);min-height:82px}
+.cal-cell{padding:6px;border-radius:var(--r);min-height:82px;border:1px solid transparent;transition:.12s;background:var(--s1);cursor:pointer}
+.cal-cell:hover{background:var(--s2);border-color:var(--b1)}
+.cal-cell.oth{opacity:.18;background:transparent;pointer-events:none}
+.cal-cell.tod .cdt{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5B3FD8,#7C5CFC);color:#fff;font-size:11px;font-weight:700;box-shadow:0 0 12px rgba(124,92,252,.5)}
+.cdt{font-size:11px;font-weight:600;color:var(--tx3);width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin-bottom:1px}
+.bars{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;padding:27px 1px 2px}
+.bb{position:absolute;height:18px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-weight:600;color:rgba(255,255,255,.92);overflow:hidden;white-space:nowrap;cursor:pointer;pointer-events:all;transition:.14s;z-index:2}
+.bb:hover{filter:brightness(1.2)}
+.bs{border-radius:5px 0 0 5px;margin-left:2px}.be{border-radius:0 5px 5px 0;margin-right:2px}
+.bm{border-radius:0}.bx{border-radius:5px;margin:0 2px}
+
+/* ── Expenses ── */
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pill{padding:5px 11px;border-radius:20px;border:1px solid var(--b1);background:var(--s1);cursor:pointer;font-size:11px;font-weight:500;color:var(--tx3);transition:.13s}
+.pill:hover{border-color:var(--b2);color:var(--tx2)}
+.pill.on{background:var(--ac3);color:var(--ac2);border-color:rgba(124,92,252,.32)}
+.exp-group{margin-bottom:20px}
+.exp-gh{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:8px;padding:0 2px}
+.exp-card{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:4px;cursor:pointer;transition:.13s}
+.exp-card:hover{background:var(--s2);border-color:var(--b2)}
+.eico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.elbl{font-size:13px;font-weight:500;color:var(--tx)}
+.emeta{font-size:11px;color:var(--tx3);margin-top:1px}
+.eamt{font-size:13px;font-weight:700;color:var(--red);white-space:nowrap}
+.et{font-size:9px;color:var(--tx3);font-family:'Geist Mono',monospace;text-align:right;margin-top:2px}
+
+/* ── Bank ── */
+.tx-card{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:4px;cursor:pointer;transition:.13s}
+.tx-card:hover{background:var(--s2);border-color:var(--b2)}
+.tx-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tx-lbl{font-size:13px;font-weight:500;color:var(--tx)}
+.tx-meta{font-size:11px;color:var(--tx3);margin-top:1px}
+.tx-amt{font-size:13px;font-weight:700;white-space:nowrap}
+
+/* ── Clients ── */
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+.client-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;cursor:pointer;transition:.15s}
+.client-card:hover{background:var(--s2);border-color:var(--b2)}
+.client-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;margin-bottom:10px;color:#fff}
+.client-name{font-size:14px;font-weight:600;color:var(--tx);margin-bottom:3px}
+.client-phone{font-size:12px;color:var(--tx3);font-family:'Geist Mono',monospace}
+.client-stats{display:flex;gap:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--b1)}
+.cs-item{font-size:11px;color:var(--tx3)}
+.cs-val{font-weight:700;color:var(--tx2);display:block;font-size:12px}
+
+/* ── Dashboard charts ── */
+.chart-wrap{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px;margin-bottom:16px}
+.chart-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:16px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:100px}
+.bc-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px}
+.bc-bars{display:flex;gap:2px;align-items:flex-end;flex:1;width:100%}
+.bc-rev{background:rgba(124,92,252,.5);border-radius:3px 3px 0 0;min-width:0;flex:1;transition:.6s;position:relative}
+.bc-rev:hover{background:rgba(124,92,252,.8)}
+.bc-exp{background:rgba(239,68,68,.35);border-radius:3px 3px 0 0;min-width:0;flex:1;transition:.6s}
+.bc-exp:hover{background:rgba(239,68,68,.6)}
+.bc-lbl{font-size:9px;color:var(--tx3);font-family:'Geist Mono',monospace;white-space:nowrap}
+.chart-legend{display:flex;gap:14px;margin-top:10px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── Dashboard rows ── */
+.ds-sec{margin-bottom:20px}
+.ds-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.brow{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);margin-bottom:4px;transition:.13s}
+.brow:hover{background:var(--s2);border-color:var(--b2)}
+.bdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.bcl{font-size:13px;font-weight:500}
+.bdt{font-size:11px;color:var(--tx3);margin-top:1px}
+.bam{font-size:13px;font-weight:700}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;margin-top:3px}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.b-conf{background:rgba(124,92,252,.12);color:var(--ac2)}.b-conf::before{background:var(--ac2)}
+.b-pend{background:var(--am2);color:var(--amber)}.b-pend::before{background:var(--amber)}
+.b-comp{background:var(--g2);color:var(--green)}.b-comp::before{background:var(--green)}
+.b-canc{background:var(--r2);color:var(--red)}.b-canc::before{background:var(--red)}
+.cat-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.cat-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cat-track{height:3px;background:var(--b1);border-radius:2px;overflow:hidden;margin-top:5px}
+.cat-fill{height:100%;border-radius:2px;transition:.6s .1s}
+
+/* ── Modal ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;animation:fadeIn .15s}
+.modal{background:#0F0F14;border:1px solid var(--b2);border-radius:var(--r2);padding:24px;width:100%;max-width:450px;max-height:92dvh;overflow-y:auto;box-shadow:0 0 80px rgba(0,0,0,.7),0 0 0 1px rgba(124,92,252,.12);animation:slideUp .18s}
+.modal-h{font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.3px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.mx{width:26px;height:26px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--tx3);transition:.13s}
+.mx:hover{color:var(--tx);background:var(--s3)}
+.fg{margin-bottom:14px}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fl{font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;display:block;font-family:'Geist Mono',monospace}
+.fi{width:100%;padding:9px 12px;border:1px solid var(--b2);border-radius:var(--r);font-size:13px;font-family:inherit;color:var(--tx);background:rgba(255,255,255,.04);outline:none;transition:.15s}
+.fi:focus{border-color:rgba(124,92,252,.45);background:rgba(124,92,252,.06);box-shadow:0 0 0 3px rgba(124,92,252,.1)}
+.fi::placeholder{color:var(--tx3)}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%2344444E' d='M5 7L0.5 2.5h9z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+select.fi option{background:#0F0F14}
+.total-row{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.18);border-radius:var(--r);padding:11px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.total-lbl{font-size:12px;color:var(--green);font-weight:500}
+.total-val{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:800;color:var(--green);letter-spacing:-.3px}
+.mfoot{display:flex;gap:8px;margin-top:20px}
+.mfoot .bp{flex:1}
+
+/* ── Misc ── */
+.loading{display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;color:var(--tx3)}
+.spin{width:22px;height:22px;border:2px solid var(--b2);border-top-color:var(--ac);border-radius:50%;animation:spin .7s linear infinite}
+.empty{text-align:center;padding:40px 24px}
+.empty-ico{width:44px;height:44px;border-radius:12px;background:var(--s2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.empty-ico svg{stroke:var(--tx3)}
+.empty-txt{font-size:13px;color:var(--tx3);margin-bottom:14px}
+.toasts{position:fixed;top:18px;right:18px;z-index:200;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{padding:10px 14px;border-radius:var(--r);font-size:12px;font-weight:500;pointer-events:all;border:1px solid;display:flex;align-items:center;gap:8px;animation:slideR .2s,fadeOut .3s 2.5s forwards;backdrop-filter:blur(12px)}
+.t-ok{background:rgba(34,197,94,.08);color:var(--green);border-color:rgba(34,197,94,.22)}
+.t-er{background:rgba(239,68,68,.08);color:var(--red);border-color:rgba(239,68,68,.22)}
+.tdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0}
+.divider{height:1px;background:var(--b1);margin:16px 0}
+
+/* ── Bottom nav ── */
+.bnav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;padding:8px 0 max(8px,env(safe-area-inset-bottom));background:rgba(10,10,13,.9);backdrop-filter:blur(20px);border-top:1px solid var(--b1)}
+.bni{display:flex}
+.bni-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px;cursor:pointer;color:var(--tx3);transition:.14s}
+.bni-item.on{color:var(--ac2)}
+.bni-item svg{opacity:.6;transition:.14s}
+.bni-item.on svg{opacity:1;stroke:var(--ac2)}
+.bni-lbl{font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:'Geist Mono',monospace}
+
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes slideR{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateX(110%)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes growH{from{height:0}to{}}
+@media(max-width:768px){
+  .sidebar{display:none}.bnav{display:block}
+  .content{padding:14px 14px calc(78px + env(safe-area-inset-bottom))}
+  .kpi-grid{grid-template-columns:1fr 1fr}.fr{grid-template-columns:1fr}
+  .client-grid{grid-template-columns:1fr 1fr}
+}
+
+/* ── Sprint 3: Alerts & Report ── */
+.alert-card{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:var(--r);margin-bottom:6px;border:1px solid;transition:.13s}
+.alert-warn{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.22)}
+.alert-ok{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.18)}
+.alert-err{background:rgba(239,68,68,.07);border-color:rgba(239,68,68,.22)}
+.alert-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.alert-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.alert-desc{font-size:11px;color:var(--tx3)}
+.notif-badge{width:7px;height:7px;border-radius:50%;background:var(--red);position:absolute;top:6px;right:6px;box-shadow:0 0 6px var(--red)}
+
+/* Report view */
+.report-header{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:20px;margin-bottom:16px}
+.report-title{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.report-meta{font-size:11px;color:var(--tx3);font-family:'Geist Mono',monospace}
+.report-section{margin-bottom:20px}
+.report-sec-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--b1)}
+.report-table{width:100%;border-collapse:collapse}
+.report-table th{text-align:left;font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;padding:6px 10px;border-bottom:1px solid var(--b1);font-family:'Geist Mono',monospace}
+.report-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px}
+.report-table tr:last-child td{border-bottom:none}
+.report-table tr:hover td{background:var(--s2)}
+.month-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+
+/* Month picker for report */
+.mpill{padding:5px 11px;border-radius:20px;border:1px solid var(--b1);background:var(--s1);cursor:pointer;font-size:11px;font-weight:500;color:var(--tx3);transition:.13s;font-family:'Geist Mono',monospace}
+.mpill:hover{border-color:var(--b2);color:var(--tx2)}
+.mpill.on{background:var(--ac3);color:var(--ac2);border-color:rgba(124,92,252,.32)}
+
+@media print{
+  .sidebar,.bnav,.topbar,.btn,.pills,.month-selector{display:none!important}
+  body,#app,.main,.content{background:white!important;color:black!important;overflow:visible!important;height:auto!important}
+  .report-header,.report-section,.report-table td,.report-table th{color:black!important;border-color:#ddd!important;background:white!important}
+  .report-title,.report-sec-title{color:black!important}
+  .kpi-grid .kpi{background:#f5f5f5!important;border:1px solid #ddd!important}
+  .kval,.klabel,.ksub{color:black!important}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading"><div class="spin"></div></div></div>
+<div class="toasts" id="toasts"></div>
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { h, render, Fragment } from 'https://esm.sh/preact@10'
+import { useState, useEffect, useCallback, useMemo } from 'https://esm.sh/preact@10/hooks'
+import htm from 'https://esm.sh/htm@3'
+const html = htm.bind(h)
+
+const sb = createClient(
+  'https://cdrqnvfhrhgilsyijqle.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkcnFudmZocmhnaWxzeWlqcWxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NjE2NDIsImV4cCI6MjA3ODQzNzY0Mn0.lCAxDQ368bjZFdl4CG6Dclu577b_ttZH_V8IQAyiTI0',
+  { db: { schema: 'hotel' } }
+)
+
+/* ── Icons (Lucide SVG inline) ───────────────────────────── */
+const ic = {
+  home:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  calendar:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  receipt: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>`,
+  chart:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
+  bank:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>`,
+  users:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  plus:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  x:       `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  chL:     `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chR:     `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  up:      `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>`,
+  dn:      `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/></svg>`,
+  pct:     `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>`,
+  wallet:  `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>`,
+  download:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  phone:   `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+  zap:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+  drop:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>`,
+  wifi:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>`,
+  mobile:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>`,
+  sparkles:`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3z"/></svg>`,
+  sofa:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 11v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v2H6v-2a2 2 0 0 0-4 0z"/><path d="M4 18v2"/><path d="M20 18v2"/><path d="M12 4v9"/></svg>`,
+  wrench:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+  hammer:  `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 5.6a5.009 5.009 0 0 0-6.22.44L12 8.2h2.47L17 5.67l1.94 1.94-2.91 2.91 1.41 1.41"/></svg>`,
+  palette: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.476-1.112-.29-.274-.479-.668-.479-1.076 0-.927.748-1.676 1.676-1.676h1.93c2.986 0 5.407-2.425 5.407-5.41 0-4.73-4.27-8.034-9.706-8.034z"/></svg>`,
+  package: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22" x2="12" y2="12"/></svg>`,
+  pnmark:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+  filetext:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  bell:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+  printer: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
+  warn:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  check2:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  arrowIn: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>`,
+  arrowOut:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`,
+  user:    `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  edit:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+}
+const svg = k => ic[k]||ic.package
+const I = ({k,cls=''}) => html`<span class=${cls} dangerouslySetInnerHTML=${{__html:svg(k)}}></span>`
+
+/* ── Constants ───────────────────────────────────────────── */
+const COLORS=['#7C5CFC','#0EA5E9','#22C55E','#F59E0B','#8B5CF6','#EF4444','#EC4899','#14B8A6']
+const AVATAR_COLORS=['#5B3FD8','#0284C7','#059669','#D97706','#7C3AED','#DC2626']
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']
+const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']
+const CAT={
+  loyer:      {l:'Loyer',      ico:'home',    col:'#818CF8',bg:'rgba(129,140,248,.1)'},
+  electricite:{l:'CIE',        ico:'zap',     col:'#F59E0B',bg:'rgba(245,158,11,.1)'},
+  eau:        {l:'SODECI',     ico:'drop',    col:'#0EA5E9',bg:'rgba(14,165,233,.1)'},
+  internet:   {l:'Internet',   ico:'wifi',    col:'#8B5CF6',bg:'rgba(139,92,246,.1)'},
+  telecom:    {l:'Télécom',    ico:'mobile',  col:'#EC4899',bg:'rgba(236,72,153,.1)'},
+  nettoyage:  {l:'Ménage',     ico:'sparkles',col:'#22C55E',bg:'rgba(34,197,94,.1)'},
+  mobilier:   {l:'Mobilier',   ico:'sofa',    col:'#F97316',bg:'rgba(249,115,22,.1)'},
+  equipement: {l:'Équipement', ico:'wrench',  col:'#94A3B8',bg:'rgba(148,163,184,.1)'},
+  travaux:    {l:'Travaux',    ico:'hammer',  col:'#EF4444',bg:'rgba(239,68,68,.1)'},
+  deco:       {l:'Déco',       ico:'palette', col:'#A78BFA',bg:'rgba(167,139,250,.1)'},
+  autre:      {l:'Autre',      ico:'package', col:'#71717A',bg:'rgba(113,113,122,.1)'},
+  charges:    {l:'Charges',    ico:'receipt', col:'#F97316',bg:'rgba(249,115,22,.1)'},
+}
+const SC={pending:{l:'En attente',c:'b-pend'},confirmed:{l:'Confirmé',c:'b-conf'},completed:{l:'Terminé',c:'b-comp'},cancelled:{l:'Annulé',c:'b-canc'}}
+
+/* ── Utils ───────────────────────────────────────────────── */
+const fN=n=>new Intl.NumberFormat('fr-CI').format(n||0)
+const fD=d=>d?new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}):'—'
+const fDL=d=>d?new Date(d+'T00:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'}):'—'
+const today=()=>new Date().toISOString().slice(0,10)
+const dim=(y,m)=>new Date(y,m+1,0).getDate()
+const fwd=(y,m)=>{const d=new Date(y,m,1).getDay();return d===0?6:d-1}
+const pad=n=>String(n).padStart(2,'0')
+const initials=n=>n?n.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2):'?'
+
+function toast(msg,t='ok'){
+  const el=document.createElement('div')
+  el.className=`toast t-${t}`
+  el.innerHTML=`<span class="tdot"></span>${msg}`
+  document.getElementById('toasts').appendChild(el)
+  setTimeout(()=>el.remove(),3200)
+}
+
+function exportCSV(data, filename, cols) {
+  const hdr=Object.keys(cols).join(',')
+  const rows=data.map(r=>Object.values(cols).map(f=>`"${(typeof f==='function'?f(r):r[f])||''}"`).join(','))
+  const csv=[hdr,...rows].join('\n')
+  const a=document.createElement('a')
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv)
+  a.download=filename+'.csv'
+  a.click()
+}
+
+/* ── Booking Modal ───────────────────────────────────────── */
+function BookingModal({resId, booking, defDate, onSave, onDelete, onClose}) {
+  const isE=!!booking
+  const [f,sF]=useState({client_name:booking?.client_name||'',check_in:booking?.check_in||defDate||today(),check_out:booking?.check_out||'',rate_per_night:booking?.rate_per_night||40000,status:booking?.status||'confirmed',notes:booking?.notes||''})
+  const [busy,sB]=useState(false)
+  const set=k=>e=>sF(p=>({...p,[k]:e.target.value}))
+  const nights=useMemo(()=>{if(!f.check_in||!f.check_out)return 0;return Math.max(0,Math.round((new Date(f.check_out)-new Date(f.check_in))/86400000))},[f.check_in,f.check_out])
+  async function save(){
+    if(!f.client_name||!f.check_in||!f.check_out)return toast('Champs requis','er')
+    if(nights<=0)return toast('Dates invalides','er')
+    sB(true)
+    const payload={...f,residence_id:resId,rate_per_night:Number(f.rate_per_night)}
+    const {error}=isE?await sb.from('bookings').update(payload).eq('id',booking.id):await sb.from('bookings').insert(payload)
+    sB(false)
+    if(error)return toast(error.message,'er')
+    toast(isE?'Réservation mise à jour':'Réservation créée')
+    onSave()
+  }
+  async function del(){
+    if(!confirm('Supprimer ?'))return
+    await sb.from('bookings').delete().eq('id',booking.id)
+    toast('Supprimé')
+    onDelete()
+  }
+  return html`<div class="overlay" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+    <div class="modal">
+      <div class="modal-h">${isE?'Modifier':'Nouvelle réservation'}<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
+      <div class="fg"><label class="fl">Nom client *</label><input class="fi" placeholder="Ex: Koné Aya" value=${f.client_name} onInput=${set('client_name')}/></div>
+      <div class="fr fg">
+        <div><label class="fl">Arrivée *</label><input class="fi" type="date" value=${f.check_in} onInput=${set('check_in')}/></div>
+        <div><label class="fl">Départ *</label><input class="fi" type="date" value=${f.check_out} onInput=${set('check_out')}/></div>
+      </div>
+      <div class="fg"><label class="fl">Tarif/nuit (FCFA) *</label><input class="fi" type="number" value=${f.rate_per_night} onInput=${set('rate_per_night')}/></div>
+      ${nights>0&&html`<div class="total-row"><span class="total-lbl">${nights} nuit${nights>1?'s':''}</span><span class="total-val">${fN(nights*Number(f.rate_per_night))} FCFA</span></div>`}
+      <div class="fg"><label class="fl">Statut</label><select class="fi" value=${f.status} onChange=${set('status')}><option value="pending">En attente</option><option value="confirmed">Confirmé</option><option value="completed">Terminé</option><option value="cancelled">Annulé</option></select></div>
+      <div class="fg"><label class="fl">Notes</label><textarea class="fi" rows="2" onInput=${set('notes')}>${f.notes}</textarea></div>
+      <div class="mfoot">${isE&&html`<button class="btn bd" onClick=${del}>Supprimer</button>`}<button class="btn bg2" onClick=${onClose}>Annuler</button><button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':isE?'Mettre à jour':'Ajouter'}</button></div>
+    </div></div>`
+}
+
+/* ── Expense Modal ───────────────────────────────────────── */
+function ExpenseModal({resId,expense,onSave,onDelete,onClose}) {
+  const isE=!!expense
+  const [f,sF]=useState({date:expense?.date||today(),type:expense?.type||'recurring',category:expense?.category||'loyer',label:expense?.label||'',amount:expense?.amount||'',notes:expense?.notes||''})
+  const [busy,sB]=useState(false)
+  const set=k=>e=>sF(p=>({...p,[k]:e.target.value}))
+  async function save(){
+    if(!f.label||!f.amount)return toast('Champs requis','er')
+    sB(true)
+    const payload={...f,residence_id:resId,amount:Number(f.amount)}
+    const {error}=isE?await sb.from('expenses').update(payload).eq('id',expense.id):await sb.from('expenses').insert(payload)
+    sB(false)
+    if(error)return toast(error.message,'er')
+    toast(isE?'Dépense mise à jour':'Dépense ajoutée')
+    onSave()
+  }
+  async function del(){
+    if(!confirm('Supprimer ?'))return
+    await sb.from('expenses').delete().eq('id',expense.id)
+    toast('Supprimé')
+    onDelete()
+  }
+  return html`<div class="overlay" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+    <div class="modal">
+      <div class="modal-h">${isE?'Modifier':'Nouvelle dépense'}<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
+      <div class="fr fg">
+        <div><label class="fl">Date *</label><input class="fi" type="date" value=${f.date} onInput=${set('date')}/></div>
+        <div><label class="fl">Type</label><select class="fi" value=${f.type} onChange=${set('type')}><option value="recurring">Courante</option><option value="setup">Investissement</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Catégorie</label><select class="fi" value=${f.category} onChange=${set('category')}>${Object.entries(CAT).map(([k,v])=>html`<option value=${k}>${v.l}</option>`)}</select></div>
+      <div class="fg"><label class="fl">Libellé *</label><input class="fi" placeholder="Ex: Loyer juillet" value=${f.label} onInput=${set('label')}/></div>
+      <div class="fg"><label class="fl">Montant (FCFA) *</label><input class="fi" type="number" placeholder="0" value=${f.amount} onInput=${set('amount')}/></div>
+      <div class="mfoot">${isE&&html`<button class="btn bd" onClick=${del}>Supprimer</button>`}<button class="btn bg2" onClick=${onClose}>Annuler</button><button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':isE?'Mettre à jour':'Ajouter'}</button></div>
+    </div></div>`
+}
+
+/* ── Bank Modal ──────────────────────────────────────────── */
+function BankModal({resId,tx,onSave,onDelete,onClose}) {
+  const isE=!!tx
+  const [f,sF]=useState({date:tx?.date||today(),type:tx?.type||'credit',label:tx?.label||'',amount:tx?.amount||'',category:tx?.category||'loyer',notes:tx?.notes||''})
+  const [busy,sB]=useState(false)
+  const set=k=>e=>sF(p=>({...p,[k]:e.target.value}))
+  async function save(){
+    if(!f.label||!f.amount)return toast('Champs requis','er')
+    sB(true)
+    const payload={...f,residence_id:resId,amount:Number(f.amount)}
+    const {error}=isE?await sb.from('bank_transactions').update(payload).eq('id',tx.id):await sb.from('bank_transactions').insert(payload)
+    sB(false)
+    if(error)return toast(error.message,'er')
+    toast('Transaction enregistrée')
+    onSave()
+  }
+  async function del(){
+    if(!confirm('Supprimer ?'))return
+    await sb.from('bank_transactions').delete().eq('id',tx.id)
+    toast('Supprimé')
+    onDelete()
+  }
+  return html`<div class="overlay" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+    <div class="modal">
+      <div class="modal-h">${isE?'Modifier':'Nouvelle transaction'}<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
+      <div class="fr fg">
+        <div><label class="fl">Date *</label><input class="fi" type="date" value=${f.date} onInput=${set('date')}/></div>
+        <div><label class="fl">Type *</label><select class="fi" value=${f.type} onChange=${set('type')}><option value="credit">Entrée (crédit)</option><option value="debit">Sortie (débit)</option></select></div>
+      </div>
+      <div class="fg"><label class="fl">Libellé *</label><input class="fi" placeholder="Ex: Encaissement loyer" value=${f.label} onInput=${set('label')}/></div>
+      <div class="fg"><label class="fl">Montant (FCFA) *</label><input class="fi" type="number" placeholder="0" value=${f.amount} onInput=${set('amount')}/></div>
+      <div class="fg"><label class="fl">Catégorie</label><select class="fi" value=${f.category} onChange=${set('category')}>${Object.entries(CAT).map(([k,v])=>html`<option value=${k}>${v.l}</option>`)}</select></div>
+      <div class="fg"><label class="fl">Notes</label><input class="fi" placeholder="Optionnel..." value=${f.notes} onInput=${set('notes')}/></div>
+      <div class="mfoot">${isE&&html`<button class="btn bd" onClick=${del}>Supprimer</button>`}<button class="btn bg2" onClick=${onClose}>Annuler</button><button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':isE?'Mettre à jour':'Ajouter'}</button></div>
+    </div></div>`
+}
+
+/* ── Client Modal ────────────────────────────────────────── */
+function ClientModal({client,onSave,onDelete,onClose}) {
+  const isE=!!client
+  const [f,sF]=useState({name:client?.name||'',phone:client?.phone||'',whatsapp:client?.whatsapp||'',email:client?.email||'',notes:client?.notes||''})
+  const [busy,sB]=useState(false)
+  const set=k=>e=>sF(p=>({...p,[k]:e.target.value}))
+  async function save(){
+    if(!f.name)return toast('Nom requis','er')
+    sB(true)
+    const {error}=isE?await sb.from('clients').update(f).eq('id',client.id):await sb.from('clients').insert(f)
+    sB(false)
+    if(error)return toast(error.message,'er')
+    toast(isE?'Client mis à jour':'Client ajouté')
+    onSave()
+  }
+  async function del(){
+    if(!confirm('Supprimer ce client ?'))return
+    await sb.from('clients').delete().eq('id',client.id)
+    toast('Client supprimé')
+    onDelete()
+  }
+  return html`<div class="overlay" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+    <div class="modal">
+      <div class="modal-h">${isE?'Modifier':'Nouveau client'}<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
+      <div class="fg"><label class="fl">Nom complet *</label><input class="fi" placeholder="Ex: Koné Aya" value=${f.name} onInput=${set('name')}/></div>
+      <div class="fr fg">
+        <div><label class="fl">Téléphone</label><input class="fi" placeholder="+225 07..." value=${f.phone} onInput=${set('phone')}/></div>
+        <div><label class="fl">WhatsApp</label><input class="fi" placeholder="+225 07..." value=${f.whatsapp} onInput=${set('whatsapp')}/></div>
+      </div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" type="email" placeholder="email@..." value=${f.email} onInput=${set('email')}/></div>
+      <div class="fg"><label class="fl">Notes</label><textarea class="fi" rows="2" placeholder="Informations utiles..." onInput=${set('notes')}>${f.notes}</textarea></div>
+      <div class="mfoot">${isE&&html`<button class="btn bd" onClick=${del}>Supprimer</button>`}<button class="btn bg2" onClick=${onClose}>Annuler</button><button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':isE?'Mettre à jour':'Ajouter'}</button></div>
+    </div></div>`
+}
+
+/* ── Residence Modal ─────────────────────────────────────── */
+function ResModal({onSave,onClose}) {
+  const [f,sF]=useState({name:'',address:'',monthly_rent:450000,default_rate:40000,color:'#7C5CFC'})
+  const [busy,sB]=useState(false)
+  const set=k=>e=>sF(p=>({...p,[k]:e.target.value}))
+  async function save(){
+    if(!f.name)return toast('Nom requis','er')
+    sB(true)
+    const {error}=await sb.from('residences').insert({...f,monthly_rent:Number(f.monthly_rent),default_rate:Number(f.default_rate)})
+    sB(false)
+    if(error)return toast('Erreur','er')
+    toast('Résidence ajoutée')
+    onSave()
+  }
+  return html`<div class="overlay" onClick=${e=>e.target===e.currentTarget&&onClose()}>
+    <div class="modal">
+      <div class="modal-h">Nouvelle résidence<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
+      <div class="fg"><label class="fl">Nom *</label><input class="fi" placeholder="Appart Cocody" value=${f.name} onInput=${set('name')}/></div>
+      <div class="fg"><label class="fl">Adresse</label><input class="fi" placeholder="Quartier, commune..." value=${f.address} onInput=${set('address')}/></div>
+      <div class="fr fg">
+        <div><label class="fl">Loyer/mois (FCFA)</label><input class="fi" type="number" value=${f.monthly_rent} onInput=${set('monthly_rent')}/></div>
+        <div><label class="fl">Tarif/nuit défaut</label><input class="fi" type="number" value=${f.default_rate} onInput=${set('default_rate')}/></div>
+      </div>
+      <div class="fg"><label class="fl">Couleur</label><input type="color" style="width:100%;height:38px;padding:3px;border:1px solid var(--b2);border-radius:8px;cursor:pointer;background:transparent" value=${f.color} onInput=${set('color')}/></div>
+      <div class="mfoot"><button class="btn bg2" onClick=${onClose}>Annuler</button><button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':'Ajouter'}</button></div>
+    </div></div>`
+}
+
+/* ── CALENDAR ────────────────────────────────────────────── */
+function CalendarView({res}) {
+  const now=new Date()
+  const [yr,sY]=useState(now.getFullYear())
+  const [mo,sM]=useState(now.getMonth())
+  const [bookings,sB]=useState([])
+  const [modal,sModal]=useState(null)
+  const load=useCallback(async()=>{
+    if(!res)return
+    const s=new Date(yr,mo,1).toISOString().slice(0,10)
+    const e=new Date(yr,mo+1,0).toISOString().slice(0,10)
+    const {data}=await sb.from('bookings').select('*').eq('residence_id',res.id).lte('check_in',e).gte('check_out',s).neq('status','cancelled').order('check_in')
+    sB(data||[])
+  },[res?.id,yr,mo])
+  useEffect(()=>{load()},[load])
+  const pM=()=>mo===0?(sY(y=>y-1),sM(11)):sM(m=>m-1)
+  const nM=()=>mo===11?(sY(y=>y+1),sM(0)):sM(m=>m+1)
+  const weeks=useMemo(()=>{
+    const fw=fwd(yr,mo),d=dim(yr,mo),days=[]
+    const pd=dim(yr,mo===0?11:mo-1)
+    for(let i=fw-1;i>=0;i--)days.push({d:pd-i,m:mo-1,y:mo===0?yr-1:yr,o:true})
+    for(let i=1;i<=d;i++)days.push({d:i,m:mo,y:yr,o:false})
+    while(days.length%7!==0)days.push({d:days.length-fw-d+1,m:mo+1,y:mo===11?yr+1:yr,o:true})
+    const w=[];for(let i=0;i<days.length;i+=7)w.push(days.slice(i,i+7))
+    return w
+  },[yr,mo])
+  function weekBars(wk){
+    const wS=new Date(wk[0].y,wk[0].m,wk[0].d),wE=new Date(wk[6].y,wk[6].m,wk[6].d+1)
+    return bookings.reduce((acc,b,i)=>{
+      const bS=new Date(b.check_in+'T00:00:00'),bE=new Date(b.check_out+'T00:00:00')
+      if(bE<=wS||bS>=wE)return acc
+      const vS=bS<wS?wS:bS,vE=bE>wE?wE:bE
+      acc.push({b,cS:Math.round((vS-wS)/86400000),cE:Math.round((vE-wS)/86400000),isS:bS>=wS,isE:bE<=wE,c:COLORS[i%COLORS.length]})
+      return acc
+    },[])
+  }
+  const ts=today(),dk=d=>`${d.y}-${pad(d.m+1)}-${pad(d.d)}`
+  const monthTotal=useMemo(()=>bookings.reduce((s,b)=>s+(b.total_amount||0),0),[bookings])
+
+  return html`<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="cal-nav" style="margin:0">
+        <button class="cal-btn" onClick=${pM} dangerouslySetInnerHTML=${{__html:ic.chL}}></button>
+        <div class="cal-title">${MONTHS[mo]} ${yr}</div>
+        <button class="cal-btn" onClick=${nM} dangerouslySetInnerHTML=${{__html:ic.chR}}></button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        ${monthTotal>0&&html`<span style="font-size:12px;color:var(--green);font-family:'Geist Mono',monospace;font-weight:600">${fN(monthTotal)} FCFA</span>`}
+        <button class="btn bp btn-sm" onClick=${()=>sModal({})}>
+          <span dangerouslySetInnerHTML=${{__html:ic.plus}}></span>Réservation
+        </button>
+      </div>
+    </div>
+    <div class="cal-dlabels">${DAYS.map(l=>html`<div class="cdl">${l}</div>`)}</div>
+    <div class="cal-grid">
+      ${weeks.map(wk=>{
+        const bars=weekBars(wk)
+        return html`<div class="cal-week" style="min-height:${Math.max(82,30+bars.length*22)}px">
+          ${wk.map(d=>{const k=dk(d),isT=!d.o&&k===ts;return html`<div class="cal-cell ${d.o?'oth':''} ${isT?'tod':''}" onClick=${()=>!d.o&&sModal({date:k})}><div class="cdt">${d.d}</div></div>`})}
+          <div class="bars">
+            ${bars.map((bar,i)=>html`<div class="bb ${bar.isS&&bar.isE?'bx':bar.isS?'bs':bar.isE?'be':'bm'}"
+              style="left:${bar.cS/7*100}%;width:${(bar.cE-bar.cS)/7*100}%;top:${i*22}px;background:${bar.c};box-shadow:0 2px 10px ${bar.c}55"
+              onClick=${e=>{e.stopPropagation();sModal({booking:bar.b})}}>
+              ${bar.isS?bar.b.client_name:''}
+            </div>`)}
+          </div>
+        </div>`
+      })}
+    </div>
+    ${modal&&html`<${BookingModal} resId=${res.id} booking=${modal.booking} defDate=${modal.date} onSave=${()=>{sModal(null);load()}} onDelete=${()=>{sModal(null);load()}} onClose=${()=>sModal(null)}/>`}
+  </div>`
+}
+
+/* ── EXPENSES ────────────────────────────────────────────── */
+function ExpensesView({res}) {
+  const [expenses,sE]=useState([])
+  const [tf,sTf]=useState('all')
+  const [modal,sModal]=useState(null)
+  const load=useCallback(async()=>{if(!res)return;const {data}=await sb.from('expenses').select('*').eq('residence_id',res.id).order('date',{ascending:false});sE(data||[])},[res?.id])
+  useEffect(()=>{load()},[load])
+  const filtered=useMemo(()=>expenses.filter(e=>tf==='all'||e.type===tf),[expenses,tf])
+  const tS=expenses.filter(e=>e.type==='setup').reduce((s,e)=>s+e.amount,0)
+  const tR=expenses.filter(e=>e.type==='recurring').reduce((s,e)=>s+e.amount,0)
+  const grouped=useMemo(()=>{const g={};filtered.forEach(e=>{const k=e.date.slice(0,7);if(!g[k])g[k]=[];g[k].push(e)});return g},[filtered])
+  const sM=Object.keys(grouped).sort().reverse()
+  const mL=s=>{const[y,m]=s.split('-');return `${MONTHS[parseInt(m)-1]} ${y}`}
+  const doExport=()=>exportCSV(expenses,'depenses_'+res.name,{Date:r=>fDL(r.date),Type:r=>r.type==='setup'?'Investissement':'Courante',Catégorie:r=>(CAT[r.category]||CAT.autre).l,Libellé:'label','Montant FCFA':'amount'})
+  return html`<div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div class="pills">${[['all','Toutes'],['recurring','Courantes'],['setup','Investissement']].map(([v,l])=>html`<button class="pill ${tf===v?'on':''}" onClick=${()=>sTf(v)}>${l}</button>`)}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bg2 btn-sm" onClick=${doExport}><span dangerouslySetInnerHTML=${{__html:ic.download}}></span>CSV</button>
+        <button class="btn bp btn-sm" onClick=${()=>sModal({})}><span dangerouslySetInnerHTML=${{__html:ic.plus}}></span>Dépense</button>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi vr"><div class="kico r" dangerouslySetInnerHTML=${{__html:ic.dn}}></div><div class="klabel">Investissement</div><div class="kval" style="color:var(--red)">${fN(tS)}</div><div class="ksub">FCFA setup</div></div>
+      <div class="kpi vr"><div class="kico r" dangerouslySetInnerHTML=${{__html:ic.receipt}}></div><div class="klabel">Charges</div><div class="kval" style="color:var(--red)">${fN(tR)}</div><div class="ksub">FCFA courantes</div></div>
+      <div class="kpi vv"><div class="kico v" dangerouslySetInnerHTML=${{__html:ic.wallet}}></div><div class="klabel">Total</div><div class="kval" style="color:var(--ac2)">${fN(tS+tR)}</div><div class="ksub">FCFA all-in</div></div>
+    </div>
+    ${sM.length===0&&html`<div class="empty"><div class="empty-ico" dangerouslySetInnerHTML=${{__html:ic.receipt}}></div><div class="empty-txt">Aucune dépense</div><button class="btn bp" style="margin:0 auto" onClick=${()=>sModal({})}>+ Ajouter</button></div>`}
+    ${sM.map(mo=>html`<div class="exp-group">
+      <div class="exp-gh"><span>${mL(mo)}</span><span>${fN(grouped[mo].reduce((s,e)=>s+e.amount,0))} FCFA</span></div>
+      ${grouped[mo].map(exp=>{const c=CAT[exp.category]||CAT.autre;return html`<div class="exp-card" onClick=${()=>sModal({expense:exp})}>
+        <div class="eico" style="background:${c.bg};color:${c.col}" dangerouslySetInnerHTML=${{__html:svg(c.ico)}}></div>
+        <div style="flex:1"><div class="elbl">${exp.label}</div><div class="emeta">${fD(exp.date)} · ${c.l}</div></div>
+        <div style="text-align:right"><div class="eamt">−${fN(exp.amount)}</div><div class="et">${exp.type==='setup'?'INVEST':'COURANT'}</div></div>
+      </div>`})}
+    </div>`)}
+    ${modal!==null&&html`<${ExpenseModal} resId=${res.id} expense=${modal.expense} onSave=${()=>{sModal(null);load()}} onDelete=${()=>{sModal(null);load()}} onClose=${()=>sModal(null)}/>`}
+  </div>`
+}
+
+/* ── BANK ────────────────────────────────────────────────── */
+function BankView({res}) {
+  const [txs,sTx]=useState([])
+  const [tf,sTf]=useState('all')
+  const [modal,sModal]=useState(null)
+  const load=useCallback(async()=>{if(!res)return;const {data}=await sb.from('bank_transactions').select('*').eq('residence_id',res.id).order('date',{ascending:false});sTx(data||[])},[res?.id])
+  useEffect(()=>{load()},[load])
+  const filtered=useMemo(()=>txs.filter(t=>tf==='all'||t.type===tf),[txs,tf])
+  const tC=txs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0)
+  const tD=txs.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0)
+  const solde=tC-tD
+  const grouped=useMemo(()=>{const g={};filtered.forEach(t=>{const k=t.date.slice(0,7);if(!g[k])g[k]=[];g[k].push(t)});return g},[filtered])
+  const sM=Object.keys(grouped).sort().reverse()
+  const mL=s=>{const[y,m]=s.split('-');return `${MONTHS[parseInt(m)-1]} ${y}`}
+  const doExport=()=>exportCSV(txs,'tresorerie_'+res.name,{Date:r=>fDL(r.date),Type:r=>r.type==='credit'?'Entrée':'Sortie',Libellé:'label','Montant FCFA':'amount'})
+  return html`<div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <div class="pills">${[['all','Toutes'],['credit','Entrées'],['debit','Sorties']].map(([v,l])=>html`<button class="pill ${tf===v?'on':''}" onClick=${()=>sTf(v)}>${l}</button>`)}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bg2 btn-sm" onClick=${doExport}><span dangerouslySetInnerHTML=${{__html:ic.download}}></span>CSV</button>
+        <button class="btn bp btn-sm" onClick=${()=>sModal({})}><span dangerouslySetInnerHTML=${{__html:ic.plus}}></span>Transaction</button>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi vg"><div class="kico g" dangerouslySetInnerHTML=${{__html:ic.arrowIn}}></div><div class="klabel">Entrées</div><div class="kval" style="color:var(--green)">${fN(tC)}</div><div class="ksub">FCFA crédits</div></div>
+      <div class="kpi vr"><div class="kico r" dangerouslySetInnerHTML=${{__html:ic.arrowOut}}></div><div class="klabel">Sorties</div><div class="kval" style="color:var(--red)">${fN(tD)}</div><div class="ksub">FCFA débits</div></div>
+      <div class="kpi ${solde>=0?'vg':'vr'}"><div class="kico ${solde>=0?'g':'r'}" dangerouslySetInnerHTML=${{__html:ic.wallet}}></div><div class="klabel">Solde banque</div><div class="kval" style="color:${solde>=0?'var(--green)':'var(--red)'}">${fN(solde)}</div><div class="ksub">FCFA net</div></div>
+    </div>
+    ${sM.map(mo=>html`<div class="exp-group">
+      <div class="exp-gh"><span>${mL(mo)}</span>
+        <span style="color:${grouped[mo].reduce((s,t)=>s+(t.type==='credit'?t.amount:-t.amount),0)>=0?'var(--green)':'var(--red)'}">
+          ${fN(Math.abs(grouped[mo].reduce((s,t)=>s+(t.type==='credit'?t.amount:-t.amount),0)))} FCFA
+        </span>
+      </div>
+      ${grouped[mo].map(tx=>{
+        const isC=tx.type==='credit'
+        return html`<div class="tx-card" onClick=${()=>sModal({tx})}>
+          <div class="tx-ico" style="background:${isC?'var(--g2)':'var(--r2)'}">
+            <span style="color:${isC?'var(--green)':'var(--red)'}" dangerouslySetInnerHTML=${{__html:isC?ic.arrowIn:ic.arrowOut}}></span>
+          </div>
+          <div style="flex:1"><div class="tx-lbl">${tx.label}</div><div class="tx-meta">${fD(tx.date)} · ${(CAT[tx.category]||CAT.autre).l}</div></div>
+          <div class="tx-amt" style="color:${isC?'var(--green)':'var(--red)'}">${isC?'+':'−'}${fN(tx.amount)}</div>
+        </div>`
+      })}
+    </div>`)}
+    ${modal!==null&&html`<${BankModal} resId=${res.id} tx=${modal.tx} onSave=${()=>{sModal(null);load()}} onDelete=${()=>{sModal(null);load()}} onClose=${()=>sModal(null)}/>`}
+  </div>`
+}
+
+/* ── CLIENTS ─────────────────────────────────────────────── */
+function ClientsView({res}) {
+  const [clients,sC]=useState([])
+  const [bookings,sB]=useState([])
+  const [modal,sModal]=useState(null)
+  const [search,sSearch]=useState('')
+  const load=useCallback(async()=>{
+    const [{data:c},{data:b}]=await Promise.all([
+      sb.from('clients').select('*').order('name'),
+      sb.from('bookings').select('*').eq('residence_id',res.id).neq('status','cancelled')
+    ])
+    sC(c||[])
+    sB(b||[])
+  },[res?.id])
+  useEffect(()=>{load()},[load])
+  const filtered=useMemo(()=>clients.filter(c=>!search||c.name.toLowerCase().includes(search.toLowerCase())||c.phone?.includes(search)),[clients,search])
+  function clientStats(name){
+    const cb=bookings.filter(b=>b.client_name===name||b.client_name?.toLowerCase()===name.toLowerCase())
+    return{stays:cb.length,revenue:cb.reduce((s,b)=>s+(b.total_amount||0),0)}
+  }
+  return html`<div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+      <input class="fi" style="max-width:240px" placeholder="Rechercher un client..." value=${search} onInput=${e=>sSearch(e.target.value)}/>
+      <button class="btn bp btn-sm" onClick=${()=>sModal({})}><span dangerouslySetInnerHTML=${{__html:ic.plus}}></span>Client</button>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi vv"><div class="kico v" dangerouslySetInnerHTML=${{__html:ic.users}}></div><div class="klabel">Clients</div><div class="kval" style="color:var(--ac2)">${clients.length}</div><div class="ksub">enregistrés</div></div>
+      <div class="kpi vg"><div class="kico g" dangerouslySetInnerHTML=${{__html:ic.calendar}}></div><div class="klabel">Séjours liés</div><div class="kval" style="color:var(--green)">${bookings.length}</div><div class="ksub">réservations</div></div>
+    </div>
+    ${filtered.length===0&&html`<div class="empty"><div class="empty-ico" dangerouslySetInnerHTML=${{__html:ic.users}}></div><div class="empty-txt">${search?'Aucun résultat':'Aucun client enregistré'}</div><button class="btn bp" style="margin:0 auto" onClick=${()=>sModal({})}>+ Ajouter</button></div>`}
+    <div class="client-grid">
+      ${filtered.map((c,i)=>{
+        const st=clientStats(c.name)
+        const col=AVATAR_COLORS[i%AVATAR_COLORS.length]
+        return html`<div class="client-card" onClick=${()=>sModal({client:c})}>
+          <div class="client-avatar" style="background:${col}">${initials(c.name)}</div>
+          <div class="client-name">${c.name}</div>
+          ${c.phone&&html`<div class="client-phone"><span dangerouslySetInnerHTML=${{__html:ic.phone}} style="display:inline-flex;vertical-align:middle;margin-right:4px"></span>${c.phone}</div>`}
+          <div class="client-stats">
+            <div class="cs-item"><span class="cs-val">${st.stays}</span>séjour${st.stays>1?'s':''}</div>
+            <div class="cs-item"><span class="cs-val" style="color:var(--green)">${fN(st.revenue)}</span>FCFA</div>
+          </div>
+        </div>`
+      })}
+    </div>
+    ${modal!==null&&html`<${ClientModal} client=${modal.client} onSave=${()=>{sModal(null);load()}} onDelete=${()=>{sModal(null);load()}} onClose=${()=>sModal(null)}/>`}
+  </div>`
+}
+
+/* ── DASHBOARD ───────────────────────────────────────────── */
+function DashboardView({res}) {
+  const now=new Date()
+  const [bookings,sB]=useState([])
+  const [expenses,sE]=useState([])
+  const [bank,sBk]=useState([])
+  const [loading,sL]=useState(true)
+  useEffect(()=>{
+    if(!res)return
+    Promise.all([
+      sb.from('bookings').select('*').eq('residence_id',res.id).neq('status','cancelled').order('check_in'),
+      sb.from('expenses').select('*').eq('residence_id',res.id),
+      sb.from('bank_transactions').select('*').eq('residence_id',res.id)
+    ]).then(([{data:b},{data:e},{data:bk}])=>{sB(b||[]);sE(e||[]);sBk(bk||[]);sL(false)})
+  },[res?.id])
+  const thisM=`${now.getFullYear()}-${pad(now.getMonth()+1)}`
+  const ts=today()
+  const mR=useMemo(()=>bookings.filter(b=>b.check_in?.slice(0,7)===thisM).reduce((s,b)=>s+(b.total_amount||0),0),[bookings,thisM])
+  const mE=useMemo(()=>expenses.filter(e=>e.date?.slice(0,7)===thisM).reduce((s,e)=>s+e.amount,0),[expenses,thisM])
+  const tR=bookings.reduce((s,b)=>s+(b.total_amount||0),0)
+  const tE=expenses.reduce((s,e)=>s+e.amount,0)
+  const bSolde=bank.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0)-bank.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0)
+  const d=dim(now.getFullYear(),now.getMonth())
+  const occ=useMemo(()=>{const days=new Set();bookings.forEach(b=>{const s=new Date(b.check_in+'T00:00:00'),e=new Date(b.check_out+'T00:00:00');let c=new Date(Math.max(s,new Date(thisM+'-01')));const mE2=new Date(now.getFullYear(),now.getMonth()+1,0);while(c<e&&c<=mE2){if(c.getFullYear()===now.getFullYear()&&c.getMonth()===now.getMonth())days.add(c.getDate());c.setDate(c.getDate()+1)}});return days.size},[bookings])
+  const upcoming=bookings.filter(b=>b.check_out>ts).slice(0,5)
+  // Revenue chart — last 6 months
+  const chartData=useMemo(()=>{
+    const months=[]
+    for(let i=5;i>=0;i--){
+      const d2=new Date(now.getFullYear(),now.getMonth()-i,1)
+      const key=`${d2.getFullYear()}-${pad(d2.getMonth()+1)}`
+      const rev=bookings.filter(b=>b.check_in?.slice(0,7)===key).reduce((s,b)=>s+(b.total_amount||0),0)
+      const exp=expenses.filter(e=>e.date?.slice(0,7)===key&&e.type==='recurring').reduce((s,e)=>s+e.amount,0)
+      months.push({label:MONTHS[d2.getMonth()].slice(0,3),key,rev,exp})
+    }
+    return months
+  },[bookings,expenses])
+  const maxVal=Math.max(...chartData.map(m=>Math.max(m.rev,m.exp)),1)
+  const byCat=useMemo(()=>{const c={};expenses.forEach(e=>{c[e.category]=(c[e.category]||0)+e.amount});return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,5)},[expenses])
+  if(loading)return html`<div class="loading"><div class="spin"></div></div>`
+  return html`<div>
+    <div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;font-family:'Geist Mono',monospace">${MONTHS[now.getMonth()].toUpperCase()} ${now.getFullYear()} — ${res.name}</div>
+    <div class="kpi-grid">
+      <div class="kpi vg"><div class="kico g" dangerouslySetInnerHTML=${{__html:ic.up}}></div><div class="klabel">Revenu ce mois</div><div class="kval" style="color:var(--green)">${fN(mR)}</div><div class="ksub">FCFA</div></div>
+      <div class="kpi vr"><div class="kico r" dangerouslySetInnerHTML=${{__html:ic.dn}}></div><div class="klabel">Dépenses ce mois</div><div class="kval" style="color:var(--red)">${fN(mE)}</div><div class="ksub">FCFA</div></div>
+      <div class="kpi vv"><div class="kico v" dangerouslySetInnerHTML=${{__html:ic.pct}}></div><div class="klabel">Occupation</div><div class="kval" style="color:var(--ac2)">${Math.round(occ/d*100)}%</div><div class="ksub">${occ}/${d} jours</div></div>
+      <div class="kpi vc"><div class="kico c" dangerouslySetInnerHTML=${{__html:ic.bank}}></div><div class="klabel">Solde banque</div><div class="kval" style="color:${bSolde>=0?'var(--cyan)':'var(--red)'}">${fN(bSolde)}</div><div class="ksub">FCFA</div></div>
+      <div class="kpi ${tR-tE>=0?'vg':'vr'}"><div class="kico ${tR-tE>=0?'g':'r'}" dangerouslySetInnerHTML=${{__html:ic.wallet}}></div><div class="klabel">Solde net total</div><div class="kval" style="color:${tR-tE>=0?'var(--green)':'var(--red)'}">${fN(tR-tE)}</div><div class="ksub">FCFA</div></div>
+    </div>
+
+    <!-- Chart 6 months -->
+    <div class="chart-wrap">
+      <div class="chart-title">Revenus vs Dépenses — 6 derniers mois</div>
+      <div class="bar-chart">
+        ${chartData.map(m=>html`<div class="bc-col">
+          <div class="bc-bars">
+            <div class="bc-rev" style="height:${Math.round(m.rev/maxVal*100)}%" title="${fN(m.rev)} FCFA revenu"></div>
+            <div class="bc-exp" style="height:${Math.round(m.exp/maxVal*100)}%" title="${fN(m.exp)} FCFA dépenses"></div>
+          </div>
+          <div class="bc-lbl">${m.label}</div>
+        </div>`)}
+      </div>
+      <div class="chart-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(124,92,252,.5)"></div>Revenus</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(239,68,68,.35)"></div>Dépenses</div>
+      </div>
+    </div>
+
+    <div class="ds-sec">
+      <div class="ds-title">Réservations à venir</div>
+      ${upcoming.length===0&&html`<div class="empty" style="padding:20px"><div class="empty-txt">Aucune réservation à venir</div></div>`}
+      ${upcoming.map(b=>{
+        const sc=SC[b.status]||{}
+        const clr=b.status==='confirmed'?'var(--ac2)':b.status==='completed'?'var(--green)':b.status==='pending'?'var(--amber)':'var(--red)'
+        return html`<div class="brow">
+          <div class="bdot" style="background:${clr};box-shadow:0 0 7px ${clr}"></div>
+          <div style="flex:1"><div class="bcl">${b.client_name||'—'}</div><div class="bdt">${fD(b.check_in)} → ${fD(b.check_out)} · ${b.nights} nuit${b.nights>1?'s':''}</div></div>
+          <div style="text-align:right"><div class="bam" style="color:var(--green)">${fN(b.total_amount)} FCFA</div><span class="badge ${sc.c||''}">${sc.l||b.status}</span></div>
+        </div>`
+      })}
+    </div>
+
+    <div class="ds-sec">
+      <div class="ds-title">Répartition dépenses</div>
+      ${byCat.map(([cat,amt])=>{const c=CAT[cat]||CAT.autre,pct=tE>0?Math.round(amt/tE*100):0;return html`<div class="cat-bar">
+        <div class="cat-ico" style="background:${c.bg};color:${c.col}" dangerouslySetInnerHTML=${{__html:svg(c.ico)}}></div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;font-weight:500;color:var(--tx2)">${c.l}</span><span style="font-size:11px;color:var(--tx3);font-family:'Geist Mono',monospace">${fN(amt)}</span></div>
+          <div class="cat-track"><div class="cat-fill" style="width:${pct}%;background:${c.col}"></div></div>
+        </div>
+      </div>`})}
+    </div>
+  </div>`
+}
+
+/* ── APP ─────────────────────────────────────────────────── */
+function App() {
+  const [residences,sRes]=useState([])
+  const [active,sActive]=useState(null)
+  const [view,sView]=useState('dashboard')
+  const [showRes,sShowRes]=useState(false)
+  const [loading,sL]=useState(true)
+  const loadRes=useCallback(async()=>{
+    const {data}=await sb.from('residences').select('*').eq('status','active').order('created_at')
+    sRes(data||[])
+    if(data?.length&&!active)sActive(data[0])
+    sL(false)
+  },[])
+  useEffect(()=>{loadRes()},[])
+
+  const NAV=[
+    {id:'dashboard',label:'Dashboard',ico:'chart'},
+    {id:'calendar', label:'Calendrier',ico:'calendar'},
+    {id:'expenses', label:'Dépenses',  ico:'receipt'},
+    {id:'bank',     label:'Trésorerie',ico:'bank'},
+    {id:'clients',  label:'Clients',   ico:'users'},
+    {id:'alerts',   label:'Alertes',   ico:'bell'},
+    {id:'report',   label:'Rapport',   ico:'filetext'},
+  ]
+  const TITLE={dashboard:'Dashboard',calendar:'Calendrier',expenses:'Dépenses',bank:'Trésorerie',clients:'Clients',alerts:'Alertes',report:'Rapport'}
+  if(loading)return html`<div style="display:flex;align-items:center;justify-content:center;height:100dvh;gap:10px;color:var(--tx3)"><div class="spin"></div></div>`
+
+  return html`<${Fragment}>
+    <div class="sidebar">
+      <div class="logo-area">
+        <div class="logo">
+          <div class="logo-mark" dangerouslySetInnerHTML=${{__html:ic.pnmark}}></div>
+          <div>
+            <div class="logo-name">Passi<em>Nest</em></div>
+            <div class="logo-tag">sprint-2 · live</div>
+          </div>
+        </div>
+      </div>
+      <div class="sb-sec">Résidences</div>
+      <div class="res-list">
+        ${residences.map((r,i)=>html`<div class="ri ${active?.id===r.id?'on':''}" onClick=${()=>sActive(r)}>
+          <div class="rpill" style="background:${r.color||COLORS[i%COLORS.length]};color:${r.color||COLORS[i%COLORS.length]}"></div>
+          <span class="rtxt">${r.name}</span>
+        </div>`)}
+        <div class="ri" onClick=${()=>sShowRes(true)} style="margin-top:3px">
+          <span dangerouslySetInnerHTML=${{__html:ic.plus}} style="color:var(--tx3)"></span>
+          <span style="font-size:12px;color:var(--tx3)">Ajouter</span>
+        </div>
+      </div>
+      <div class="sb-sec">Navigation</div>
+      <div class="nav-list">
+        ${NAV.map(n=>html`<div class="ni ${view===n.id?'on':''}" onClick=${()=>sView(n.id)}>
+          <span dangerouslySetInnerHTML=${{__html:svg(n.ico)}}></span>${n.label}
+        </div>`)}
+      </div>
+      <div class="sb-foot"><div class="sb-ver"><div class="sb-dot"></div>Tous systèmes opérationnels</div></div>
+    </div>
+
+    <div class="main">
+      <div class="topbar">
+        <div><div class="tb-title">${TITLE[view]}</div><div class="tb-crumb">${active?.name||'—'}</div></div>
+      </div>
+      <div class="content">
+        ${!active?html`<div class="empty"><div class="empty-ico" dangerouslySetInnerHTML=${{__html:ic.home}}></div><div class="empty-txt">Aucune résidence</div><button class="btn bp" style="margin:0 auto" onClick=${()=>sShowRes(true)}>+ Ajouter</button></div>`
+        :html`
+          ${view==='dashboard'&&html`<${DashboardView} res=${active}/>`}
+          ${view==='calendar' &&html`<${CalendarView}  res=${active}/>`}
+          ${view==='expenses' &&html`<${ExpensesView}  res=${active}/>`}
+          ${view==='bank'     &&html`<${BankView}      res=${active}/>`}
+          ${view==='clients'  &&html`<${ClientsView}   res=${active}/>`}
+          ${view==='alerts'   &&html`<${AlertsView}    res=${active}/>`}
+          ${view==='report'   &&html`<${ReportView}    res=${active}/>`}
+        `}
+      </div>
+    </div>
+
+    <nav class="bnav">
+      <div class="bni">
+        ${NAV.map(n=>html`<div class="bni-item ${view===n.id?'on':''}" onClick=${()=>sView(n.id)}>
+          <span dangerouslySetInnerHTML=${{__html:svg(n.ico)}}></span>
+          <span class="bni-lbl">${n.label}</span>
+        </div>`)}
+      </div>
+    </nav>
+
+    ${showRes&&html`<${ResModal} onSave=${()=>{sShowRes(false);loadRes()}} onClose=${()=>sShowRes(false)}/>`}
+  </${Fragment}>`
+}
+render(html`<${App}/>`, document.getElementById('app'))
+</script>
+</body>
+</html>
