@@ -293,7 +293,7 @@ const html = htm.bind(h)
 const sb = createClient(
   'https://cdrqnvfhrhgilsyijqle.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkcnFudmZocmhnaWxzeWlqcWxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NjE2NDIsImV4cCI6MjA3ODQzNzY0Mn0.lCAxDQ368bjZFdl4CG6Dclu577b_ttZH_V8IQAyiTI0',
-  { db: { schema: 'hotel' } }
+  
 )
 
 /* ── Icons (Lucide SVG inline) ───────────────────────────── */
@@ -399,7 +399,7 @@ function BookingModal({resId, booking, defDate, onSave, onDelete, onClose}) {
     if(nights<=0)return toast('Dates invalides','er')
     sB(true)
     const payload={...f,residence_id:resId,rate_per_night:Number(f.rate_per_night)}
-    const {error}=isE?await sb.from('bookings').update(payload).eq('id',booking.id):await sb.from('bookings').insert(payload)
+    const {error}=isE?await sb.from('pn_bookings').update(payload).eq('id',booking.id):await sb.from('pn_bookings').insert(payload)
     sB(false)
     if(error)return toast(error.message,'er')
     toast(isE?'Réservation mise à jour':'Réservation créée')
@@ -407,7 +407,7 @@ function BookingModal({resId, booking, defDate, onSave, onDelete, onClose}) {
   }
   async function del(){
     if(!confirm('Supprimer ?'))return
-    await sb.from('bookings').delete().eq('id',booking.id)
+    await sb.from('pn_bookings').delete().eq('id',booking.id)
     toast('Supprimé')
     onDelete()
   }
@@ -437,7 +437,7 @@ function ExpenseModal({resId,expense,onSave,onDelete,onClose}) {
     if(!f.label||!f.amount)return toast('Champs requis','er')
     sB(true)
     const payload={...f,residence_id:resId,amount:Number(f.amount)}
-    const {error}=isE?await sb.from('expenses').update(payload).eq('id',expense.id):await sb.from('expenses').insert(payload)
+    const {error}=isE?await sb.from('pn_expenses').update(payload).eq('id',expense.id):await sb.from('pn_expenses').insert(payload)
     sB(false)
     if(error)return toast(error.message,'er')
     toast(isE?'Dépense mise à jour':'Dépense ajoutée')
@@ -445,7 +445,7 @@ function ExpenseModal({resId,expense,onSave,onDelete,onClose}) {
   }
   async function del(){
     if(!confirm('Supprimer ?'))return
-    await sb.from('expenses').delete().eq('id',expense.id)
+    await sb.from('pn_expenses').delete().eq('id',expense.id)
     toast('Supprimé')
     onDelete()
   }
@@ -473,7 +473,7 @@ function BankModal({resId,tx,onSave,onDelete,onClose}) {
     if(!f.label||!f.amount)return toast('Champs requis','er')
     sB(true)
     const payload={...f,residence_id:resId,amount:Number(f.amount)}
-    const {error}=isE?await sb.from('bank_transactions').update(payload).eq('id',tx.id):await sb.from('bank_transactions').insert(payload)
+    const {error}=isE?await sb.from('pn_bank_transactions').update(payload).eq('id',tx.id):await sb.from('pn_bank_transactions').insert(payload)
     sB(false)
     if(error)return toast(error.message,'er')
     toast('Transaction enregistrée')
@@ -481,7 +481,7 @@ function BankModal({resId,tx,onSave,onDelete,onClose}) {
   }
   async function del(){
     if(!confirm('Supprimer ?'))return
-    await sb.from('bank_transactions').delete().eq('id',tx.id)
+    await sb.from('pn_bank_transactions').delete().eq('id',tx.id)
     toast('Supprimé')
     onDelete()
   }
@@ -509,7 +509,7 @@ function ClientModal({client,onSave,onDelete,onClose}) {
   async function save(){
     if(!f.name)return toast('Nom requis','er')
     sB(true)
-    const {error}=isE?await sb.from('clients').update(f).eq('id',client.id):await sb.from('clients').insert(f)
+    const {error}=isE?await sb.from('pn_clients').update(f).eq('id',client.id):await sb.from('pn_clients').insert(f)
     sB(false)
     if(error)return toast(error.message,'er')
     toast(isE?'Client mis à jour':'Client ajouté')
@@ -517,7 +517,7 @@ function ClientModal({client,onSave,onDelete,onClose}) {
   }
   async function del(){
     if(!confirm('Supprimer ce client ?'))return
-    await sb.from('clients').delete().eq('id',client.id)
+    await sb.from('pn_clients').delete().eq('id',client.id)
     toast('Client supprimé')
     onDelete()
   }
@@ -543,7 +543,7 @@ function ResModal({onSave,onClose}) {
   async function save(){
     if(!f.name)return toast('Nom requis','er')
     sB(true)
-    const {error}=await sb.from('residences').insert({...f,monthly_rent:Number(f.monthly_rent),default_rate:Number(f.default_rate)})
+    const {error}=await sb.from('pn_residences').insert({...f,monthly_rent:Number(f.monthly_rent),default_rate:Number(f.default_rate)})
     sB(false)
     if(error)return toast('Erreur','er')
     toast('Résidence ajoutée')
@@ -574,7 +574,7 @@ function CalendarView({res}) {
     if(!res)return
     const s=new Date(yr,mo,1).toISOString().slice(0,10)
     const e=new Date(yr,mo+1,0).toISOString().slice(0,10)
-    const {data}=await sb.from('bookings').select('*').eq('residence_id',res.id).lte('check_in',e).gte('check_out',s).neq('status','cancelled').order('check_in')
+    const {data}=await sb.from('pn_bookings').select('*').eq('residence_id',res.id).lte('check_in',e).gte('check_out',s).neq('status','cancelled').order('check_in')
     sB(data||[])
   },[res?.id,yr,mo])
   useEffect(()=>{load()},[load])
@@ -641,7 +641,7 @@ function ExpensesView({res}) {
   const [expenses,sE]=useState([])
   const [tf,sTf]=useState('all')
   const [modal,sModal]=useState(null)
-  const load=useCallback(async()=>{if(!res)return;const {data}=await sb.from('expenses').select('*').eq('residence_id',res.id).order('date',{ascending:false});sE(data||[])},[res?.id])
+  const load=useCallback(async()=>{if(!res)return;const {data}=await sb.from('pn_expenses').select('*').eq('residence_id',res.id).order('date',{ascending:false});sE(data||[])},[res?.id])
   useEffect(()=>{load()},[load])
   const filtered=useMemo(()=>expenses.filter(e=>tf==='all'||e.type===tf),[expenses,tf])
   const tS=expenses.filter(e=>e.type==='setup').reduce((s,e)=>s+e.amount,0)
@@ -681,7 +681,7 @@ function BankView({res}) {
   const [txs,sTx]=useState([])
   const [tf,sTf]=useState('all')
   const [modal,sModal]=useState(null)
-  const load=useCallback(async()=>{if(!res)return;const {data}=await sb.from('bank_transactions').select('*').eq('residence_id',res.id).order('date',{ascending:false});sTx(data||[])},[res?.id])
+  const load=useCallback(async()=>{if(!res)return;const {data}=await sb.from('pn_bank_transactions').select('*').eq('residence_id',res.id).order('date',{ascending:false});sTx(data||[])},[res?.id])
   useEffect(()=>{load()},[load])
   const filtered=useMemo(()=>txs.filter(t=>tf==='all'||t.type===tf),[txs,tf])
   const tC=txs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0)
@@ -733,8 +733,8 @@ function ClientsView({res}) {
   const [search,sSearch]=useState('')
   const load=useCallback(async()=>{
     const [{data:c},{data:b}]=await Promise.all([
-      sb.from('clients').select('*').order('name'),
-      sb.from('bookings').select('*').eq('residence_id',res.id).neq('status','cancelled')
+      sb.from('pn_clients').select('*').order('name'),
+      sb.from('pn_bookings').select('*').eq('residence_id',res.id).neq('status','cancelled')
     ])
     sC(c||[])
     sB(b||[])
@@ -784,9 +784,9 @@ function DashboardView({res}) {
   useEffect(()=>{
     if(!res)return
     Promise.all([
-      sb.from('bookings').select('*').eq('residence_id',res.id).neq('status','cancelled').order('check_in'),
-      sb.from('expenses').select('*').eq('residence_id',res.id),
-      sb.from('bank_transactions').select('*').eq('residence_id',res.id)
+      sb.from('pn_bookings').select('*').eq('residence_id',res.id).neq('status','cancelled').order('check_in'),
+      sb.from('pn_expenses').select('*').eq('residence_id',res.id),
+      sb.from('pn_bank_transactions').select('*').eq('residence_id',res.id)
     ]).then(([{data:b},{data:e},{data:bk}])=>{sB(b||[]);sE(e||[]);sBk(bk||[]);sL(false)})
   },[res?.id])
   const thisM=`${now.getFullYear()}-${pad(now.getMonth()+1)}`
@@ -870,6 +870,157 @@ function DashboardView({res}) {
 }
 
 /* ── APP ─────────────────────────────────────────────────── */
+/* ── ALERTS ─────────────────────────────────────────────── */
+function AlertsView({res}){
+  const now=new Date()
+  const thisM=`${now.getFullYear()}-${pad(now.getMonth()+1)}`
+  const [alerts,sA]=useState([]),[expenses,sE]=useState([]),[loading,sL]=useState(true)
+  useEffect(()=>{
+    if(!res)return
+    Promise.all([
+      sb.from('pn_alerts').select('*').eq('residence_id',res.id).eq('active',true).order('expected_day'),
+      sb.from('pn_expenses').select('*').eq('residence_id',res.id).gte('date',thisM+'-01').lte('date',thisM+'-31').eq('type','recurring')
+    ]).then(([{data:a},{data:e}])=>{sA(a||[]);sE(e||[]);sL(false)})
+  },[res?.id])
+  const isPaid=a=>expenses.some(e=>e.category===a.category)
+  const dueCount=alerts.filter(a=>!isPaid(a)).length
+  if(loading)return html`<div class="loading"><div class="spin"></div></div>`
+  return html`<div>
+    <div style="margin-bottom:20px">
+      <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.3px">Alertes — ${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:2px;font-family:'Geist Mono',monospace">${dueCount} charge${dueCount>1?'s':''} en attente ce mois</div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi vr"><div class="kico r" dangerouslySetInnerHTML=${{__html:ic.bell}}></div><div class="klbl">À payer</div><div class="kval" style="color:var(--red)">${dueCount}</div><div class="ksub">ce mois</div></div>
+      <div class="kpi vg"><div class="kico g" dangerouslySetInnerHTML=${{__html:ic.check}}></div><div class="klbl">Réglées</div><div class="kval" style="color:var(--green)">${alerts.length-dueCount}</div><div class="ksub">ce mois</div></div>
+      <div class="kpi va"><div class="kico a" dangerouslySetInnerHTML=${{__html:ic.wallet}}></div><div class="klbl">Montant estimé</div><div class="kval" style="color:var(--amber)">${fN(alerts.filter(a=>!isPaid(a)).reduce((s,a)=>s+a.amount_hint,0))}</div><div class="ksub">FCFA restant</div></div>
+    </div>
+    <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:8px">Charges récurrentes configurées</div>
+    ${alerts.map(a=>{const paid=isPaid(a);const c=CAT[a.category]||CAT.autre;return html`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);margin-bottom:6px;border:1px solid;background:${paid?'rgba(34,197,94,.04)':'rgba(239,68,68,.06)'};border-color:${paid?'rgba(34,197,94,.15)':'rgba(239,68,68,.2)'}">
+        <div style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:${c.bg};color:${c.col}" dangerouslySetInnerHTML=${{__html:svg(c.ico)}}></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--tx)">${a.label}</div><div style="font-size:11px;color:var(--tx3);margin-top:2px">Attendu le ${pad(a.expected_day)} · ~${fN(a.amount_hint)} FCFA</div></div>
+        <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;background:${paid?'var(--g2)':'var(--r2)'};color:${paid?'var(--green)':'var(--red)'}">${paid?'✓ Réglé':'⚠ En attente'}</span>
+      </div>`})}
+    <div style="margin-top:14px;padding:12px 14px;border-radius:var(--r);background:var(--s1);border:1px solid var(--b1);font-size:12px;color:var(--tx3);line-height:1.6">
+      <strong style="color:var(--tx2)">Comment ça marche</strong> — Dès que tu ajoutes une dépense de la bonne catégorie ce mois-ci, l'alerte passe au vert automatiquement.
+    </div>
+  </div>`
+}
+
+/* ── ANNUAL ──────────────────────────────────────────────── */
+function AnnualView({res}){
+  const now=new Date()
+  const [yr,sY]=useState(now.getFullYear())
+  const [bookings,sB]=useState([]),[expenses,sE]=useState([]),[loading,sL]=useState(true)
+  useEffect(()=>{
+    if(!res)return;sL(true)
+    Promise.all([
+      sb.from('pn_bookings').select('*').eq('residence_id',res.id).neq('status','cancelled'),
+      sb.from('pn_expenses').select('*').eq('residence_id',res.id).eq('type','recurring')
+    ]).then(([{data:b},{data:e}])=>{sB(b||[]);sE(e||[]);sL(false)})
+  },[res?.id])
+  const data=useMemo(()=>MONTHS.map((name,mi)=>{
+    const key=`${yr}-${pad(mi+1)}`
+    const mB=bookings.filter(b=>b.check_in?.slice(0,7)===key)
+    const rev=mB.reduce((s,b)=>s+(b.total_amount||0),0)
+    const exp=expenses.filter(e=>e.date?.slice(0,7)===key).reduce((s,e)=>s+e.amount,0)
+    const d=dim(yr,mi),occ=new Set()
+    bookings.forEach(b=>{const s=new Date(b.check_in+'T00:00:00'),e=new Date(b.check_out+'T00:00:00');let c=new Date(Math.max(s,new Date(key+'-01')));const mE=new Date(yr,mi+1,0);while(c<e&&c<=mE){if(c.getFullYear()===yr&&c.getMonth()===mi)occ.add(c.getDate());c.setDate(c.getDate()+1)}})
+    return{name,key,rev,exp,nb:mB.length,occ:Math.round(occ.size/d*100),d}
+  }),[bookings,expenses,yr])
+  const totRev=data.reduce((s,m)=>s+m.rev,0),totExp=data.reduce((s,m)=>s+m.exp,0),avgOcc=Math.round(data.reduce((s,m)=>s+m.occ,0)/12)
+  if(loading)return html`<div class="loading"><div class="spin"></div></div>`
+  return html`<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="cal-btn" onClick=${()=>sY(y=>y-1)} dangerouslySetInnerHTML=${{__html:ic.chL}}></button>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;letter-spacing:-.3px">${yr}</div>
+        <button class="cal-btn" onClick=${()=>sY(y=>y+1)} dangerouslySetInnerHTML=${{__html:ic.chR}}></button>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-bottom:20px">
+      <div class="kpi vg"><div class="kico g" dangerouslySetInnerHTML=${{__html:ic.up}}></div><div class="klbl">Revenu ${yr}</div><div class="kval" style="color:var(--green)">${fN(totRev)}</div><div class="ksub">FCFA</div></div>
+      <div class="kpi vr"><div class="kico r" dangerouslySetInnerHTML=${{__html:ic.dn}}></div><div class="klbl">Charges ${yr}</div><div class="kval" style="color:var(--red)">${fN(totExp)}</div><div class="ksub">FCFA</div></div>
+      <div class="kpi vv"><div class="kico v" dangerouslySetInnerHTML=${{__html:ic.pct}}></div><div class="klbl">Occupation moy.</div><div class="kval" style="color:var(--ac2)">${avgOcc}%</div><div class="ksub">annuelle</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px">
+      ${data.map((m,i)=>{
+        const isCur=i===now.getMonth()&&yr===now.getFullYear()
+        const col=m.occ>70?'var(--green)':m.occ>40?'var(--amber)':'var(--red)'
+        return html`<div style="background:var(--s1);border:1px solid ${isCur?'rgba(124,92,252,.4)':'var(--b1)'};background:${isCur?'rgba(124,92,252,.06)':'var(--s1)'};border-radius:var(--r2b);padding:14px;transition:.15s" onMouseenter=${e=>e.currentTarget.style.background='var(--s2)'} onMouseleave=${e=>e.currentTarget.style.background=isCur?'rgba(124,92,252,.06)':'var(--s1)'}>
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:700;margin-bottom:8px">${m.name.slice(0,3)}</div>
+          <div style="height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin-bottom:8px"><div style="height:100%;width:${m.occ}%;background:${col};border-radius:2px;transition:.6s"></div></div>
+          <div style="font-size:11px;color:var(--tx3);display:flex;justify-content:space-between;margin-bottom:3px">Occupation<span style="font-weight:600;color:${col}">${m.occ}%</span></div>
+          <div style="font-size:11px;color:var(--tx3);display:flex;justify-content:space-between;margin-bottom:3px">Revenus<span style="font-weight:600;color:var(--green)">${m.rev>0?fN(m.rev):'—'}</span></div>
+          <div style="font-size:11px;color:var(--tx3);display:flex;justify-content:space-between">Séjours<span style="font-weight:600">${m.nb}</span></div>
+        </div>`
+      })}
+    </div>
+  </div>`
+}
+
+/* ── REPORT ──────────────────────────────────────────────── */
+function ReportView({res}){
+  const now=new Date()
+  const [yr,sY]=useState(now.getFullYear()),[mo,sM]=useState(now.getMonth())
+  const [bookings,sB]=useState([]),[expenses,sE]=useState([]),[bank,sBk]=useState([]),[loading,sL]=useState(true)
+  const key=`${yr}-${pad(mo+1)}`
+  useEffect(()=>{
+    if(!res)return;sL(true)
+    const s=key+'-01',e=key+'-31'
+    Promise.all([
+      sb.from('pn_bookings').select('*').eq('residence_id',res.id).neq('status','cancelled').gte('check_in',s).lte('check_in',e),
+      sb.from('pn_expenses').select('*').eq('residence_id',res.id).gte('date',s).lte('date',e),
+      sb.from('pn_bank_transactions').select('*').eq('residence_id',res.id).gte('date',s).lte('date',e)
+    ]).then(([{data:b},{data:e2},{data:bk}])=>{sB(b||[]);sE(e2||[]);sBk(bk||[]);sL(false)})
+  },[res?.id,key])
+  const totRev=bookings.reduce((s,b)=>s+(b.total_amount||0),0)
+  const totExp=expenses.reduce((s,e)=>s+e.amount,0)
+  const net=totRev-totExp
+  const d=dim(yr,mo)
+  const occ=useMemo(()=>{const days=new Set();bookings.forEach(b=>{const s=new Date(b.check_in+'T00:00:00'),e=new Date(b.check_out+'T00:00:00');let c=new Date(s);while(c<e){if(c.getFullYear()===yr&&c.getMonth()===mo)days.add(c.getDate());c.setDate(c.getDate()+1)}});return days.size},[bookings])
+  const byCat=useMemo(()=>{const c={};expenses.forEach(e=>{c[e.category]=(c[e.category]||0)+e.amount});return Object.entries(c).sort((a,b)=>b[1]-a[1])},[expenses])
+  if(loading)return html`<div class="loading"><div class="spin"></div></div>`
+  return html`<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="cal-btn" onClick=${()=>mo===0?(sY(y=>y-1),sM(11)):sM(m=>m-1)} dangerouslySetInnerHTML=${{__html:ic.chL}}></button>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.3px;text-transform:capitalize">${MONTHS[mo]} ${yr}</div>
+        <button class="cal-btn" onClick=${()=>mo===11?(sY(y=>y+1),sM(0)):sM(m=>m+1)} dangerouslySetInnerHTML=${{__html:ic.chR}}></button>
+      </div>
+      <button class="btn bg2 bsm" onClick=${()=>window.print()}><span dangerouslySetInnerHTML=${{__html:ic.print}}></span>Imprimer / PDF</button>
+    </div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2b);padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div><div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px">Rapport mensuel</div><div style="font-size:12px;color:var(--tx3);margin-top:4px;font-family:'Geist Mono',monospace">${res.name} · ${MONTHS[mo]} ${yr}</div></div>
+        <div style="font-size:11px;color:var(--tx3);font-family:'Geist Mono',monospace">Généré le ${fDL(today())}</div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--b1)">Revenus locatifs</div>
+        ${bookings.length===0&&html`<div style="font-size:12px;color:var(--tx3);padding:8px 0">Aucune réservation ce mois</div>`}
+        ${bookings.map(b=>html`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b1)"><span style="font-size:13px;color:var(--tx2)">${b.client_name||'—'} (${fD(b.check_in)}→${fD(b.check_out)})</span><span style="font-size:13px;font-weight:700;color:var(--green)">${fN(b.total_amount)} FCFA</span></div>`)}
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--b2);margin-top:4px"><span style="font-size:13px;font-weight:600">Total revenus</span><span style="font-size:15px;font-weight:700;color:var(--green)">${fN(totRev)} FCFA</span></div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--b1)">Dépenses</div>
+        ${byCat.map(([cat,amt])=>{const c=CAT[cat]||CAT.autre;return html`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b1)"><span style="font-size:13px;color:var(--tx2)">${c.l}</span><span style="font-size:13px;font-weight:700;color:var(--red)">−${fN(amt)} FCFA</span></div>`})}
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid var(--b2);margin-top:4px"><span style="font-size:13px;font-weight:600">Total dépenses</span><span style="font-size:15px;font-weight:700;color:var(--red)">−${fN(totExp)} FCFA</span></div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);font-family:'Geist Mono',monospace;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--b1)">Indicateurs</div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b1)"><span style="font-size:13px;color:var(--tx2)">Réservations</span><span style="font-size:13px;font-weight:700">${bookings.length} séjour${bookings.length>1?'s':''}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--b1)"><span style="font-size:13px;color:var(--tx2)">Taux d'occupation</span><span style="font-size:13px;font-weight:700;color:${occ/d>0.7?'var(--green)':occ/d>0.4?'var(--amber)':'var(--red)'}">${Math.round(occ/d*100)}% (${occ}/${d} jours)</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:var(--r);background:${net>=0?'rgba(34,197,94,.07)':'rgba(239,68,68,.07)'};border:1px solid ${net>=0?'rgba(34,197,94,.2)':'rgba(239,68,68,.2)'}">
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700">Résultat net</span>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:800;color:${net>=0?'var(--green)':'var(--red)'}">${fN(net)} FCFA</span>
+      </div>
+    </div>
+  </div>`
+}
+
+/* ── APP ─────────────────────────────────────────────────── */
 function App() {
   const [residences,sRes]=useState([])
   const [active,sActive]=useState(null)
@@ -877,7 +1028,7 @@ function App() {
   const [showRes,sShowRes]=useState(false)
   const [loading,sL]=useState(true)
   const loadRes=useCallback(async()=>{
-    const {data}=await sb.from('residences').select('*').eq('status','active').order('created_at')
+    const {data}=await sb.from('pn_residences').select('*').eq('status','active').order('created_at')
     sRes(data||[])
     if(data?.length&&!active)sActive(data[0])
     sL(false)
@@ -891,9 +1042,10 @@ function App() {
     {id:'bank',     label:'Trésorerie',ico:'bank'},
     {id:'clients',  label:'Clients',   ico:'users'},
     {id:'alerts',   label:'Alertes',   ico:'bell'},
-    {id:'report',   label:'Rapport',   ico:'filetext'},
+    {id:'annual',   label:'Annuel',    ico:'annual'},
+    {id:'report',   label:'Rapport',   ico:'report'},
   ]
-  const TITLE={dashboard:'Dashboard',calendar:'Calendrier',expenses:'Dépenses',bank:'Trésorerie',clients:'Clients',alerts:'Alertes',report:'Rapport'}
+  const TITLE={dashboard:'Dashboard',calendar:'Calendrier',expenses:'Dépenses',bank:'Trésorerie',clients:'Clients',alerts:'Alertes',annual:'Vue annuelle',report:'Rapport mensuel'}
   if(loading)return html`<div style="display:flex;align-items:center;justify-content:center;height:100dvh;gap:10px;color:var(--tx3)"><div class="spin"></div></div>`
 
   return html`<${Fragment}>
@@ -940,6 +1092,7 @@ function App() {
           ${view==='bank'     &&html`<${BankView}      res=${active}/>`}
           ${view==='clients'  &&html`<${ClientsView}   res=${active}/>`}
           ${view==='alerts'   &&html`<${AlertsView}    res=${active}/>`}
+          ${view==='annual'   &&html`<${AnnualView}    res=${active}/>`}
           ${view==='report'   &&html`<${ReportView}    res=${active}/>`}
         `}
       </div>
