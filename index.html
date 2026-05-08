@@ -46,6 +46,9 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;back
 .ri.on .rpill{box-shadow:0 0 7px currentColor}
 .rtxt{font-size:12px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx2)}
 .ri.on .rtxt{color:var(--ac2)}
+.ri:hover .res-edit-btn{opacity:1!important}
+.ri.on .res-edit-btn{opacity:.6!important}
+.ri.on .res-edit-btn:hover{opacity:1!important;background:rgba(124,92,252,.3)!important;color:var(--ac2)!important}
 .nav-list{padding:8px;flex:1;overflow-y:auto}
 .ni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:.13s;color:var(--tx3);font-size:13px;font-weight:500;margin-bottom:1px;border:1px solid transparent;position:relative}
 .ni:hover{background:var(--s2);color:var(--tx2)}
@@ -550,22 +553,42 @@ function ClientModal({client,onSave,onDelete,onClose}) {
 }
 
 /* ── Residence Modal ─────────────────────────────────────── */
-function ResModal({onSave,onClose}) {
-  const [f,sF]=useState({name:'',address:'',monthly_rent:450000,default_rate:40000,color:'#7C5CFC'})
+function ResModal({residence, onSave, onDelete, onClose}) {
+  const isEdit = !!residence
+  const [f,sF]=useState({
+    name:         residence?.name         || '',
+    address:      residence?.address      || '',
+    monthly_rent: residence?.monthly_rent || 450000,
+    default_rate: residence?.default_rate || 40000,
+    color:        residence?.color        || '#7C5CFC'
+  })
   const [busy,sB]=useState(false)
+  const [delBusy,sDB]=useState(false)
   const set=k=>e=>sF(p=>({...p,[k]:e.target.value}))
   async function save(){
     if(!f.name)return toast('Nom requis','er')
     sB(true)
-    const {error}=await sb.from('pn_residences').insert({...f,monthly_rent:Number(f.monthly_rent),default_rate:Number(f.default_rate)})
+    const payload={...f,monthly_rent:Number(f.monthly_rent),default_rate:Number(f.default_rate)}
+    const {error}=isEdit
+      ? await sb.from('pn_residences').update(payload).eq('id',residence.id)
+      : await sb.from('pn_residences').insert(payload)
     sB(false)
-    if(error)return toast('Erreur','er')
-    toast('Résidence ajoutée')
+    if(error)return toast('Erreur : '+error.message,'er')
+    toast(isEdit?'Résidence mise à jour':'Résidence ajoutée')
     onSave()
+  }
+  async function del(){
+    if(!confirm(`Supprimer "${residence.name}" ? Toutes les réservations, dépenses et données liées seront supprimées.`))return
+    sDB(true)
+    const {error}=await sb.from('pn_residences').delete().eq('id',residence.id)
+    sDB(false)
+    if(error)return toast('Erreur : '+error.message,'er')
+    toast('Résidence supprimée')
+    onDelete()
   }
   return html`<div class="overlay" onClick=${e=>e.target===e.currentTarget&&onClose()}>
     <div class="modal">
-      <div class="modal-h">Nouvelle résidence<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
+      <div class="modal-h">${isEdit?'Modifier la résidence':'Nouvelle résidence'}<button class="mx" onClick=${onClose} dangerouslySetInnerHTML=${{__html:ic.x}}></button></div>
       <div class="fg"><label class="fl">Nom *</label><input class="fi" placeholder="Appart Cocody" value=${f.name} onInput=${set('name')}/></div>
       <div class="fg"><label class="fl">Adresse</label><input class="fi" placeholder="Quartier, commune..." value=${f.address} onInput=${set('address')}/></div>
       <div class="fr fg">
@@ -573,7 +596,11 @@ function ResModal({onSave,onClose}) {
         <div><label class="fl">Tarif/nuit défaut</label><input class="fi" type="number" value=${f.default_rate} onInput=${set('default_rate')}/></div>
       </div>
       <div class="fg"><label class="fl">Couleur</label><input type="color" style="width:100%;height:38px;padding:3px;border:1px solid var(--b2);border-radius:8px;cursor:pointer;background:transparent" value=${f.color} onInput=${set('color')}/></div>
-      <div class="mfoot"><button class="btn bg2" onClick=${onClose}>Annuler</button><button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':'Ajouter'}</button></div>
+      <div class="mfoot">
+        ${isEdit && html`<button class="btn bd" onClick=${del} disabled=${delBusy}>${delBusy?'…':'Supprimer'}</button>`}
+        <button class="btn bg2" onClick=${onClose}>Annuler</button>
+        <button class="btn bp" onClick=${save} disabled=${busy}>${busy?'…':isEdit?'Enregistrer':'Ajouter'}</button>
+      </div>
     </div></div>`
 }
 
@@ -1075,10 +1102,18 @@ function App({onLogout}) {
       </div>
       <div class="sb-sec">Résidences</div>
       <div class="res-list">
-        ${residences.map((r,i)=>html`<div class="ri ${active?.id===r.id?'on':''}" onClick=${()=>sActive(r)}>
-          <div class="rpill" style="background:${r.color||COLORS[i%COLORS.length]};color:${r.color||COLORS[i%COLORS.length]}"></div>
-          <span class="rtxt">${r.name}</span>
-        </div>`)}
+        ${residences.map((r,i)=>html`
+          <div class="ri ${active?.id===r.id?'on':''}" style="position:relative" onClick=${()=>sActive(r)}>
+            <div class="rpill" style="background:${r.color||COLORS[i%COLORS.length]};color:${r.color||COLORS[i%COLORS.length]}"></div>
+            <span class="rtxt">${r.name}</span>
+            <button
+              onClick=${e=>{e.stopPropagation();sEditRes(r)}}
+              style="opacity:0;transition:.15s;background:var(--s3);border:none;border-radius:5px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--tx2);padding:0"
+              class="res-edit-btn"
+              title="Modifier"
+              dangerouslySetInnerHTML=${{__html:'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'}}
+            ></button>
+          </div>`)}
         <div class="ri" onClick=${()=>sShowRes(true)} style="margin-top:3px">
           <span dangerouslySetInnerHTML=${{__html:ic.plus}} style="color:var(--tx3)"></span>
           <span style="font-size:12px;color:var(--tx3)">Ajouter</span>
@@ -1121,7 +1156,16 @@ function App({onLogout}) {
       </div>
     </nav>
 
-    ${showRes&&html`<${ResModal} onSave=${()=>{sShowRes(false);loadRes()}} onClose=${()=>sShowRes(false)}/>`}
+    ${showRes&&html`<${ResModal}
+      onSave=${()=>{sShowRes(false);loadRes()}}
+      onClose=${()=>sShowRes(false)}
+    />`}
+    ${editRes&&html`<${ResModal}
+      residence=${editRes}
+      onSave=${()=>{sEditRes(null);loadRes()}}
+      onDelete=${()=>{sEditRes(null);if(active?.id===editRes.id)sActive(null);loadRes()}}
+      onClose=${()=>sEditRes(null)}
+    />`}
   </${Fragment}>`
 }
 
