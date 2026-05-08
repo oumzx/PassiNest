@@ -1067,11 +1067,13 @@ function App({onLogout}) {
   const [active,sActive]=useState(null)
   const [view,sView]=useState('dashboard')
   const [showRes,sShowRes]=useState(false)
+  const [editRes,sEditRes]=useState(null)
   const [loading,sL]=useState(true)
   const loadRes=useCallback(async()=>{
     const {data}=await sb.from('pn_residences').select('*').eq('status','active').order('created_at')
-    sRes(data||[])
-    if(data?.length&&!active)sActive(data[0])
+    if(!data){sL(false);return}
+    sRes(data)
+    sActive(prev => prev ? (data.find(r=>r.id===prev.id)||data[0]) : data[0])
     sL(false)
   },[])
   useEffect(()=>{loadRes()},[])
@@ -1245,10 +1247,12 @@ function Root() {
   const [session,sSession]=useState(undefined) // undefined = loading
 
   useEffect(()=>{
-    // Check existing session
     sb.auth.getSession().then(({data})=>sSession(data.session||null))
-    // Listen for auth changes
-    const {data:{subscription}} = sb.auth.onAuthStateChange((_,sess)=>sSession(sess||null))
+    const {data:{subscription}} = sb.auth.onAuthStateChange((event,sess)=>{
+      // Ignore TOKEN_REFRESHED — only update on real session changes
+      if(event==='TOKEN_REFRESHED') return
+      sSession(sess||null)
+    })
     return ()=>subscription.unsubscribe()
   },[])
 
