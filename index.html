@@ -278,6 +278,20 @@ select.fi option{background:#0F0F14}
   .kpi-grid .kpi{background:#f5f5f5!important;border:1px solid #ddd!important}
   .kval,.klabel,.ksub{color:black!important}
 }
+/* ── Auth ── */
+.auth-wrap{display:flex;align-items:center;justify-content:center;height:100dvh;padding:20px}
+.auth-card{background:#0F0F14;border:1px solid var(--b2);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 0 80px rgba(0,0,0,.6),0 0 0 1px rgba(124,92,252,.1)}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.auth-logo-mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#5B3FD8,#7C5CFC);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(124,92,252,.5)}
+.auth-title{font-family:"Bricolage Grotesque",sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--tx3);margin-bottom:28px;line-height:1.5}
+.auth-error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.auth-btn{width:100%;padding:12px;background:linear-gradient(135deg,#5B3FD8,#7C5CFC);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit;letter-spacing:.01em;box-shadow:0 0 22px rgba(124,92,252,.3)}
+.auth-btn:hover{box-shadow:0 0 32px rgba(124,92,252,.5);transform:translateY(-1px)}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.auth-hint{font-size:11px;color:var(--tx3);text-align:center;margin-top:16px;font-family:"Geist Mono",monospace}
+.logout-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r);cursor:pointer;transition:.13s;color:var(--tx3);font-size:12px;font-weight:500;border:none;background:transparent;width:100%;font-family:inherit}
+.logout-btn:hover{background:rgba(239,68,68,.08);color:var(--red)}
 </style>
 </head>
 <body>
@@ -1021,7 +1035,7 @@ function ReportView({res}){
 }
 
 /* ── APP ─────────────────────────────────────────────────── */
-function App() {
+function App({onLogout}) {
   const [residences,sRes]=useState([])
   const [active,sActive]=useState(null)
   const [view,sView]=useState('dashboard')
@@ -1076,7 +1090,7 @@ function App() {
           <span dangerouslySetInnerHTML=${{__html:svg(n.ico)}}></span>${n.label}
         </div>`)}
       </div>
-      <div class="sb-foot"><div class="sb-ver"><div class="sb-dot"></div>Tous systèmes opérationnels</div></div>
+      <div class="sb-foot"><div class="sb-ver" style="margin-bottom:10px"><div class="sb-dot"></div>Tous systèmes opérationnels</div><button class="logout-btn" onClick=${onLogout}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Déconnexion</button></div>
     </div>
 
     <div class="main">
@@ -1110,7 +1124,100 @@ function App() {
     ${showRes&&html`<${ResModal} onSave=${()=>{sShowRes(false);loadRes()}} onClose=${()=>sShowRes(false)}/>`}
   </${Fragment}>`
 }
-render(html`<${App}/>`, document.getElementById('app'))
+
+/* ── LOGIN PAGE ─────────────────────────────────────────── */
+function LoginPage({onLogin}) {
+  const [email,sEmail]=useState('oumzx@yopmail.com')
+  const [pwd,sPwd]=useState('')
+  const [busy,sBusy]=useState(false)
+  const [err,sErr]=useState('')
+  const [showPwd,sShowPwd]=useState(false)
+
+  async function login(e) {
+    e && e.preventDefault && e.preventDefault()
+    if(!email||!pwd) return sErr('Email et mot de passe requis')
+    sBusy(true); sErr('')
+    const {data,error} = await sb.auth.signInWithPassword({email,password:pwd})
+    sBusy(false)
+    if(error) return sErr(error.message==='Invalid login credentials'?'Email ou mot de passe incorrect':error.message)
+    onLogin(data.session)
+  }
+
+  return html`
+    <div class="auth-wrap">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="auth-logo-mark" dangerouslySetInnerHTML=${{__html:ic.pnmark}}></div>
+          <div>
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:800;line-height:1">Passi<span style="background:linear-gradient(90deg,#9D85FF,#7C5CFC);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Nest</span></div>
+            <div style="font-size:10px;color:var(--tx3);font-family:'Geist Mono',monospace;margin-top:2px">Gestion de résidences</div>
+          </div>
+        </div>
+
+        <div class="auth-title">Connexion</div>
+        <div class="auth-sub">Accède à ton espace de gestion</div>
+
+        ${err && html`<div class="auth-error"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>${err}</div>`}
+
+        <div class="fg">
+          <label class="fl">Email</label>
+          <input class="fi" type="email" placeholder="ton@email.com" value=${email}
+            onInput=${e=>sEmail(e.target.value)}
+            onKeydown=${e=>e.key==='Enter'&&login()}
+          />
+        </div>
+
+        <div class="fg" style="margin-bottom:20px;position:relative">
+          <label class="fl">Mot de passe</label>
+          <input class="fi" type=${showPwd?'text':'password'} placeholder="••••••••••••••••"
+            value=${pwd} onInput=${e=>sPwd(e.target.value)}
+            onKeydown=${e=>e.key==='Enter'&&login()}
+            style="padding-right:42px"
+          />
+          <button
+            onClick=${()=>sShowPwd(v=>!v)}
+            style="position:absolute;right:10px;top:50%;transform:translateY(-2px);background:none;border:none;cursor:pointer;color:var(--tx3);padding:4px;display:flex;align-items:center"
+            dangerouslySetInnerHTML=${{__html:showPwd
+              ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+              : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+            }}
+          ></button>
+        </div>
+
+        <button class="auth-btn" onClick=${login} disabled=${busy}>
+          ${busy
+            ? html`<span style="display:flex;align-items:center;justify-content:center;gap:8px"><div class="spin" style="border-color:rgba(255,255,255,.3);border-top-color:#fff;width:16px;height:16px"></div>Connexion…</span>`
+            : 'Se connecter →'
+          }
+        </button>
+
+        <div class="auth-hint">PassiNest · Accès privé</div>
+      </div>
+    </div>`
+}
+
+/* ── ROOT (auth guard) ──────────────────────────────────── */
+function Root() {
+  const [session,sSession]=useState(undefined) // undefined = loading
+
+  useEffect(()=>{
+    // Check existing session
+    sb.auth.getSession().then(({data})=>sSession(data.session||null))
+    // Listen for auth changes
+    const {data:{subscription}} = sb.auth.onAuthStateChange((_,sess)=>sSession(sess||null))
+    return ()=>subscription.unsubscribe()
+  },[])
+
+  if(session===undefined) return html`
+    <div style="display:flex;align-items:center;justify-content:center;height:100dvh;gap:10px;color:var(--tx3)">
+      <div class="spin"></div>
+    </div>`
+
+  if(!session) return html`<${LoginPage} onLogin=${s=>sSession(s)}/>`
+
+  return html`<${App} session=${session} onLogout=${()=>sb.auth.signOut()}/>`
+}
+render(html`<${Root}/>`, document.getElementById('app'))
 </script>
 </body>
 </html>
